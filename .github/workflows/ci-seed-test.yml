@@ -32,23 +32,19 @@ jobs:
       DB_PASSWORD: root
 
     steps:
+      # ✅ 必ず最初に checkout
+      - name: 🧰 Checkout repository
+        uses: actions/checkout@v4
+
+      # 🔍 デバッグ用（composer.jsonの位置確認）
       - name: 🧭 Debug - show workspace
         run: |
           pwd
           ls -la
-          echo "-----"
+          echo "----- composer.json check -----"
           find . -maxdepth 2 -type f -name composer.json || true
 
-      - name: 🧰 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🧭 Confirm files after checkout
-        run: |
-          pwd
-          ls -la
-          echo "-----"
-          find . -maxdepth 2 -type f -name composer.json || true
-
+      # ✅ PHP セットアップ
       - name: ⚙️ Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -56,6 +52,7 @@ jobs:
           extensions: mbstring, pdo_mysql, xml, bcmath
           ini-values: post_max_size=256M, memory_limit=2G
 
+      # ✅ composer install は checkout 後に！
       - name: 📦 Install dependencies
         run: composer install --no-progress --prefer-dist --no-interaction
 
