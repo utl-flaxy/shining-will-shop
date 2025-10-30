@@ -3,65 +3,91 @@ name: CI - Test db:seed
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
 
 jobs:
-  test-seed:
+  seed-idempotency:
+    name: Run migrations and test db:seed idempotency
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: testing
-      DB_CONNECTION: sqlite
-      DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
-      APP_KEY: base64:CiRANDOMPLACEHOLDERGENERATEINJOB==
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Debug - show workspace
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: testing
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - name: 🧭 Debug - show workspace
         run: |
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
           pwd
           ls -la
-          echo "Contents of repo root:"
-          ls -la $GITHUB_WORKSPACE || true
+          echo "-----"
+          find . -maxdepth 2 -type f -name composer.json || true
 
-      - name: Setup PHP
+      - name: 🧰 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🧭 Confirm files after checkout
+        run: |
+          pwd
+          ls -la
+          echo "-----"
+          find . -maxdepth 2 -type f -name composer.json || true
+
+      - name: ⚙️ Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: mbstring, sqlite, pdo_sqlite, xml
-          coverage: none
+          php-version: '8.1'
+          extensions: mbstring, pdo_mysql, xml, bcmath
+          ini-values: post_max_size=256M, memory_limit=2G
 
-      - name: Cache composer
-        uses: actions/cache@v4
-        with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+      - name: 📦 Install dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
 
-      - name: Install dependencies (composer)
+      - name: ⚙️ Copy .env
         run: |
-          composer install --no-progress --prefer-dist --no-interaction
-        # working-directory: ./subdir  # <-- if your composer.json is not at repo root, set this to the correct path
+          if [ -f .env.example ]; then cp .env.example .env; fi
 
-      - name: Prepare sqlite DB file
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-          chmod 664 database/database.sqlite
-          ls -la database
+      - name: 🔑 Generate app key
+        run: php artisan key:generate --ansi
 
-      - name: App key & config clear
+      - name: 💤 Wait for MySQL
         run: |
-          php artisan key:generate --ansi || true
-          php artisan config:clear
+          for i in {1..30}; do
+            php -r "exit((int)!(@mysqli_connect('127.0.0.1','root','root')));" && break
+            echo "⏳ Waiting for MySQL..."
+            sleep 2
+          done
+          echo "✅ MySQL is ready."
 
-      - name: Run migrations and seed
+      - name: 🧱 Run migrations and seed
         run: |
-          php artisan migrate:fresh --seed --force
-
-      - name: Re-run seed to test idempotency and verify
-        run: |
+          php artisan migrate:fresh --force
           php artisan db:seed --force
-          php artisan tinker --execute="echo \\DB::table('products')->where('sku','TEST-001')->count();"
-          php artisan tinker --execute="echo \\DB::table('users')->whereIn('email',['admin@example.com','test@example.com'])->count();"
+
+      - name: 🔁 Re-run seed (idempotency check)
+        run: php artisan db:seed --force
+
+      - name: 🔍 Verify product duplication
+        run: |
+          sudo apt-get update && sudo apt-get install -y default-mysql-client
+          COUNT=$(mysql -h 127.0.0.1 -uroot -proot -D testing -N -s -e "SELECT COUNT(*) FROM products WHERE sku='TEST-001';")
+          echo "PRODUCT_COUNT=$COUNT"
+          if [ -z "$COUNT" ]; then echo "❌ products table not found or query failed"; exit 1; fi
+          if [ "$COUNT" -gt 1 ]; then echo "❌ Duplicate product entries found"; exit 1; fi
+          echo "✅ Idempotency check passed."
