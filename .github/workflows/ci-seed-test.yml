@@ -22,8 +22,8 @@ jobs:
           php -v || true
           echo "--- which php ---"
           which php || true
-          echo "--- php info from PHP constants ---"
-          php -r 'echo "PHP_VERSION=" . PHP_VERSION . "\n" . "PHP_BINARY=" . PHP_BINARY . "\n" . "PHP_OS=" . PHP_OS . "\n" . "PHP_SAPI=" . PHP_SAPI . "\n";'
+          echo "--- PHP constants ---"
+          php -r 'echo "PHP_VERSION=" . PHP_VERSION . "\nPHP_BINARY=" . PHP_BINARY . "\nPHP_OS=" . PHP_OS . "\nPHP_SAPI=" . PHP_SAPI . "\n";'
           echo "--- composer --version ---"
           composer --version || echo 'composer not found'
           echo "--- composer diagnose ---"
