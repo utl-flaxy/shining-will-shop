@@ -1,0 +1,8 @@
+
+use App\Http\Controllers\StripeWebhookController;
+
+/*
+| Temporary: Stripe webhook on API routes to avoid CSRF locally.
+| For local testing only — do not leave this in production.
+*/
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);

@@ -1,0 +1,77 @@
+
+   FAIL  Tests\Feature\Auth\AuthenticationTest
+  ✓ login screen can be rendered                                         0.28s  
+  ⨯ users can authenticate using the login screen                        0.57s  
+  ✓ users can not authenticate with invalid password                     0.38s  
+  ⨯ authenticated user can logout                                        0.21s  
+
+   PASS  Tests\Feature\Auth\EmailVerificationTest
+  ✓ verification notification is sent when requested                     0.21s  
+  ✓ user can verify email via signed url                                 0.20s  
+
+   FAIL  Tests\Feature\Auth\PasswordConfirmationTest
+  ⨯ user can confirm password when required                              0.37s  
+
+   PASS  Tests\Feature\Auth\PasswordResetTest
+  ✓ password reset link is sent                                          0.39s  
+  ✓ user can reset password with valid token                             0.92s  
+
+   PASS  Tests\Feature\Auth\PasswordUpdateTest
+  ✓ authenticated user can update password                               0.92s  
+
+   PASS  Tests\Feature\Auth\RegistrationTest
+  ✓ user can register with valid data                                    0.39s  
+  ✓ registration requires email and password                             0.02s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate us…   
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 200.
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/AuthenticationTest.php:32
+     28▕             'password' => 'password',
+     29▕         ]);
+     30▕ 
+     31▕         $this->assertAuthenticated();
+  ➜  32▕         $response->assertRedirect('/dashboard');
+     33▕     }
+     34▕ 
+     35▕     public function test_users_can_not_authenticate_with_invalid_password(): void
+     36▕     {
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > authenticated user can lo…   
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 200.
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/AuthenticationTest.php:56
+     52▕ 
+     53▕         $response = $this->post('/logout');
+     54▕ 
+     55▕         $this->assertGuest();
+  ➜  56▕         $response->assertRedirect('/');
+     57▕     }
+     58▕ }
+     59▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordConfirmationTe…  RouteNotFoundException   
+  Route [password.confirm] not defined.
+
+  at vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php:477
+    473▕             ! is_null($url = call_user_func($this->missingNamedRouteResolver, $name, $parameters, $absolute))) {
+    474▕             return $url;
+    475▕         }
+    476▕ 
+  ➜ 477▕         throw new RouteNotFoundException("Route [{$name}] not defined.");
+    478▕     }
+    479▕ 
+    480▕     /**
+    481▕      * Get the URL for a given route instance.
+
+      [2m+2 vendor frames [22m
+  3   tests/Feature/Auth/PasswordConfirmationTest.php:23
+
+
+  Tests:    3 failed, 9 passed (24 assertions)
+  Duration: 4.90s
+

@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Filament\AdminShining\Resources;
+
+use App\Filament\AdminShining\Resources\MemberResource\Pages;
+use App\Models\Member;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Schemas\Components\Toggle;
+use UnitEnum;
+use BackedEnum;
+
+class MemberResource extends Resource
+{
+    protected static ?string $model = Member::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function form(Schema $schema): Schema
+    {
+        return MemberForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return MembersTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListMembers::route('/'),
+            'create' => CreateMember::route('/create'),
+            'edit' => EditMember::route('/{record}/edit'),
+        ];
+    }
+}

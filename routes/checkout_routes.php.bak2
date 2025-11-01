@@ -1,0 +1,15 @@
+<?php
+
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\StripeWebhookController;
+use Illuminate\Support\Facades\Route;
+
+// Checkout (auth required)
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::post('/checkout/create-session', [CheckoutController::class, 'createSession'])->name('checkout.create');
+});
+
+// Stripe webhook (no CSRF - temporary)
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->name('stripe.webhook')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);

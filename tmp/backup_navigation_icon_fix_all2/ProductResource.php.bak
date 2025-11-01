@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Filament\AdminShining\Resources\Products;
+
+use App\Filament\AdminShining\Resources\Products\ProductResource\Pages;
+use App\Models\Product;
+use Filament\Resources\Resource;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+// 親クラスの宣言に合わせて import（グローバルの Enum）
+use BackedEnum;
+use UnitEnum;
+
+class ProductResource extends Resource
+{
+    protected static ?string $model = Product::class;
+
+    // ★ 型を親と一致させる（Filament v4 系の定義）
+    protected static ?string  = 'heroicon-o-user-group';
+    protected static string|UnitEnum|null $navigationGroup = 'ショップ管理';
+
+    protected static ?string $navigationLabel = 'Products';
+    protected static ?string $pluralModelLabel = 'Products';
+    protected static ?string $modelLabel = 'Product';
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\TextInput::make('title')
+                ->label('タイトル')
+                ->required()
+                ->maxLength(255),
+
+            Forms\Components\Textarea::make('description')
+                ->label('説明')
+                ->rows(5),
+
+            Forms\Components\TextInput::make('price')
+                ->label('価格（円）')
+                ->numeric()
+                ->required()
+                ->rules(['integer', 'min:0']),
+
+            Forms\Components\TextInput::make('sku')
+                ->label('SKU')
+                ->unique(ignoreRecord: true)
+                ->maxLength(100),
+
+            Forms\Components\TextInput::make('stock')
+                ->label('在庫')
+                ->numeric()
+                ->rules(['integer', 'min:0'])
+                ->default(0),
+
+            Forms\Components\FileUpload::make('images')
+                ->label('画像')
+                ->multiple()
+                ->reorderable()
+                ->directory('products')
+                ->disk('public')
+                ->image()
+                ->imageEditor()
+                ->downloadable()
+                ->panelLayout('grid')
+                ->columnSpanFull(),
+
+            Forms\Components\Toggle::make('is_published')
+                ->label('公開')
+                ->default(true),
+        ])->columns(2);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\ImageColumn::make('images')
+                    ->label('画像')
+                    ->square()
+                    ->circular(false)
+                    ->disk('public')
+                    ->state(fn ($record) => is_array($record->images) && count($record->images) ? $record->images[0] : null),
+
+                Tables\Columns\TextColumn::make('title')
+                    ->label('タイトル')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('sku')
+                    ->label('SKU')
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('price')
+                    ->label('価格')
+                    ->money('JPY', true)
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('stock')
+                    ->label('在庫')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('公開')
+                    ->boolean()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('更新日')
+                    ->dateTime()
+                    ->since()
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_published')->label('公開'),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index'  => Pages\ListProducts::route('/'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
+}

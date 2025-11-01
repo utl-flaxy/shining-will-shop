@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect()->route('products.index');
+});
+
+// Product listing / detail
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Cart
+Route::get('/cart', [ProductController::class, 'cartIndex'])->name('cart.index');
+Route::post('/cart/add', [ProductController::class, 'cartAdd'])->name('cart.add');
+Route::post('/cart/update', [ProductController::class, 'cartUpdate'])->name('cart.update');
+Route::post('/cart/remove', [ProductController::class, 'cartRemove'])->name('cart.remove');
+Route::post('/cart/clear', [ProductController::class, 'cartClear'])->name('cart.clear');
+
+// Include checkout/webhook routes if present
+if (file_exists(__DIR__ . '/checkout_routes.php')) {
+    require __DIR__ . '/checkout_routes.php';
+}
+
+/*
+|--------------------------------------------------------------------------
+| TEMP: accept Stripe webhook at /api/stripe/webhook (no CSRF) for local testing
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\StripeWebhookController;
+
+Route::post('/api/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->name('stripe.api.webhook')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+ // TEMP: local Stripe webhook for testing (no CSRF, no session)
+ use App\Http\Controllers\StripeWebhookController;
+ Route::post('/local/stripe/webhook', [StripeWebhookController::class, 'handle'])
+     ->name('stripe.local.webhook')
+     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Session\Middleware\StartSession::class]);
+
+ // TEMP: local Stripe webhook for testing (no CSRF, no session)
+ use App\Http\Controllers\StripeWebhookController;
+ Route::post('/local/stripe/webhook', [StripeWebhookController::class, 'handle'])
+     ->name('stripe.local.webhook')
+     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Session\Middleware\StartSession::class]);
+ ROUTE
