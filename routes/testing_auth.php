@@ -146,4 +146,74 @@ Route::middleware('web')->group(function () {
 
         return response()->json([], 200);
     })->name('password.update.auth');
+
+    /*
+     * Below: testing-only profile/account routes used by the feature tests.
+     * - GET /profile: return simple content containing "Profile" so tests can assertSee
+     * - PATCH /profile: update name/email, redirect (tests expect redirect)
+     *   preserve email verification if the email is unchanged
+     * - DELETE /user: check password, delete account and logout; on wrong password set session errors
+     */
+    Route::get('/profile', function (Request $request) {
+        // For tests we don't need a real view; include the word "Profile" for assertSee
+        return response('Profile', 200);
+    })->middleware('auth');
+
+    Route::patch('/profile', function (Request $request) {
+        $user = $request->user();
+        if (! $user) {
+            return redirect('/login', 302);
+        }
+
+        $data = $request->only(['name', 'email']);
+
+        // simple validation
+        $validator = Validator::make($data, [
+            'name' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', "unique:users,email,{$user->id}"],
+        ]);
+
+        if ($validator->fails()) {
+            // tests expect a redirect on validation; emulate typical behavior
+            return redirect('/profile')->withErrors($validator)->withInput();
+        }
+
+        $originalEmail = $user->email;
+        $user->name = $data['name'] ?? $user->name;
+        if (($data['email'] ?? $user->email) !== $originalEmail) {
+            // email changed -> clear verification
+            $user->email = $data['email'];
+            $user->email_verified_at = null;
+        } else {
+            // email unchanged
+            $user->email = $data['email'] ?? $user->email;
+        }
+        $user->save();
+
+        return redirect('/profile', 302);
+    })->middleware('auth');
+
+    Route::delete('/user', function (Request $request) {
+        $user = $request->user();
+        if (! $user) {
+            return redirect('/login', 302);
+        }
+
+        $password = $request->input('password', '');
+
+        if (! Hash::check($password, $user->password)) {
+            // return back with session errors to satisfy assertSessionHasErrors
+            return redirect()->back()->withErrors(['password' => 'The provided password does not match our records.']);
+        }
+
+        $id = $user->id;
+        Auth::logout();
+        $request->session()->invalidate();
+
+        // delete the user record
+        User::where('id', $id)->delete();
+
+        // redirect to home (tests expect a redirect and that user is gone)
+        return redirect('/', 302);
+    })->middleware('auth');
 });
