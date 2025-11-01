@@ -18,7 +18,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, zip
+          extensions: mbstring, xml, zip, pdo, pdo_sqlite
           coverage: none
 
       - name: Debug: show PHP and Composer versions
@@ -36,7 +36,20 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --no-interaction --optimize-autoloader
 
+      - name: Prepare environment for tests
+        run: |
+          # ensure an env exists (copy example if present)
+          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
+          # generate app key if needed
+          php artisan key:generate --ansi --no-interaction || true
+        env:
+          APP_ENV: testing
+
       - name: Run tests (Feature)
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_DRIVER: array
         run: |
           if [ -f vendor/bin/pest ]; then
             echo "Running Pest tests (Feature)"
