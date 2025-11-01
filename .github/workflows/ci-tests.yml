@@ -18,7 +18,12 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, zip, pdo, pdo_sqlite
+          extensions:
+            - mbstring
+            - xml
+            - zip
+            - pdo
+            - pdo_sqlite
           coverage: none
 
       - name: Debug: show PHP and Composer versions
