@@ -1,27 +1,36 @@
 name: CI - Test db:seed
-
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
 
 jobs:
-  seed-idempotency:
-    name: Run migrations and test db:seed idempotency
+  test-seed:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testing
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
-          --health-interval=10s --health-timeout=5s --health-retries=10
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, zip
+          coverage: none
+
+      - name: Debug: show PHP and Composer versions
+        run: |
+          echo "--- php -v ---"
+          php -v || true
+          echo "--- which php ---"
+          which php || true
+          echo "--- php info from PHP constants ---"
+          php -r 'echo "PHP_VERSION=" . PHP_VERSION . "\n" . "PHP_BINARY=" . PHP_BINARY . "\n" . "PHP_OS=" . PHP_OS . "\n" . "PHP_SAPI=" . PHP_SAPI . "\n";'
+          echo "--- composer --version ---"
+          composer --version || echo 'composer not found'
+          echo "--- composer diagnose ---"
+          composer diagnose || true
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction --optimize-autoloader
 
     env:
       DB_CONNECTION: mysql
