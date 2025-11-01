@@ -1,41 +1,41 @@
-name: CI Tests
+name: CI - Pest & PHPUnit Tests
+
 on:
+  push:
+    branches: [ main, ci/*, feature/* ]
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   tests:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup PHP
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, xml, zip
+          extensions: mbstring, xml, sqlite, bcmath, fileinfo
           coverage: none
 
-      - name: Debug: show PHP and Composer versions
-        run: |
-          echo "--- php -v ---"
-          php -v || true
-          echo "--- which php ---"
-          which php || true
-          echo "--- PHP constants ---"
-          php -r 'echo "PHP_VERSION=" . PHP_VERSION . "\nPHP_BINARY=" . PHP_BINARY . "\nPHP_OS=" . PHP_OS . "\nPHP_SAPI=" . PHP_SAPI . "\n";'
-          echo "--- composer --version ---"
-          composer --version || echo 'composer not found'
-          echo "--- composer diagnose ---"
-          composer diagnose || true
-
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --no-interaction --optimize-autoloader
+        run: composer install --no-progress --prefer-dist --no-interaction
 
-      - name: Run PHPUnit (Feature)
+      - name: Show PHP and Composer versions
         run: |
-          if [ -f vendor/bin/phpunit ]; then
-            vendor/bin/phpunit --testsuite=Feature || true
+          php -v
+          composer --version
+          which php
+
+      - name: Run Pest or PHPUnit tests
+        run: |
+          if [ -f "vendor/bin/pest" ]; then
+            echo "Running Pest tests..."
+            vendor/bin/pest --colors=always
           else
-            echo "phpunit not installed"
+            echo "Pest not found. Running PHPUnit tests..."
+            vendor/bin/phpunit --colors=always
           fi
