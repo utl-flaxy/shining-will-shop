@@ -9,10 +9,15 @@ services:
     container_name: shining-will-shop-proxy
     restart: unless-stopped
     ports:
+      - "80:80" # HTTP（自動リダイレクト用）
       - "443:443" # HTTPS公開
     volumes:
+      # nginx仮想ホスト設定
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      # 証明書・秘密鍵（mkcert または Let's Encrypt）
       - ./docker/ssl:/etc/nginx/ssl:ro
+      # Laravelのpublicディレクトリをマウント
+      - ./:/var/www/html
     depends_on:
       - laravel.test
     networks:
@@ -23,6 +28,7 @@ services:
   # -------------------------------------------------------
   worker:
     image: 'sail-8.4/app'
+    container_name: shining-will-shop-worker
     restart: unless-stopped
     working_dir: /var/www/html
     environment:
@@ -36,7 +42,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-laravel}
       DB_USERNAME: ${DB_USERNAME:-sail}
       DB_PASSWORD: ${DB_PASSWORD:-password}
-    entrypoint: [ "/bin/sh", "-lc", "/var/www/html/docker/wait-for-db.sh && exec php /var/www/html/artisan queue:work --sleep=3 --tries=3 --timeout=90" ]
+    entrypoint: [ "/bin/sh", "-lc", "/var/www/html/docker/wait-for-db.sh && exec php artisan queue:work --sleep=3 --tries=3 --timeout=90" ]
     volumes:
       - ./:/var/www/html
       - ./docker/wait-for-db.sh:/var/www/html/docker/wait-for-db.sh
