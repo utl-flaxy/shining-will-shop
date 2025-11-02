@@ -1,0 +1,68 @@
+name: CI Tests (fixed)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - ci/add-pest-workflow
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions:
+            - mbstring
+            - xml
+            - zip
+            - pdo
+            - pdo_sqlite
+          coverage: none
+
+      - name: Debug: show PHP and Composer versions
+        run: |
+          echo "--- php -v ---"
+          php -v || true
+          echo "--- which php ---"
+          which php || true
+          echo "--- echo PATH ---"
+          echo "$PATH"
+          echo "--- composer --version ---"
+          composer --version || true
+          composer diagnose || true
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Prepare environment for tests
+        run: |
+          # ensure an env exists (copy example if present)
+          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
+          # generate app key if needed
+          php artisan key:generate --ansi --no-interaction || true
+        env:
+          APP_ENV: testing
+
+      - name: Run tests (Feature)
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_DRIVER: array
+        run: |
+          if [ -f vendor/bin/pest ]; then
+            echo "Running Pest tests (Feature)"
+            vendor/bin/pest tests/Feature
+          elif [ -f vendor/bin/phpunit ]; then
+            echo "Running PHPUnit tests (Feature)"
+            vendor/bin/phpunit --testsuite=Feature
+          else
+            echo "No test runner found (vendor/bin/pest or vendor/bin/phpunit)"
+            exit 1
+          fi
