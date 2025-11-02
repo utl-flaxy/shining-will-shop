@@ -24,7 +24,6 @@ jobs:
             - zip
             - pdo
             - pdo_sqlite
-          coverage: none
 
       - name: Debug show PHP and Composer versions
         run: |
