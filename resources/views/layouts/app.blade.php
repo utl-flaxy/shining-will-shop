@@ -1,52 +1,78 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>@yield('title', 'Shop')</title>
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-  <style>
-    /* 最低限のスタイル（プロジェクトの CSS に合わせて調整してください） */
-    body{font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; margin:0; padding:0; background:#f7fafc;}
-    .container{max-width:1100px; margin:28px auto; padding:0 16px;}
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-    .logo{font-weight:700; font-size:18px;}
-    nav a{margin-left:12px; color:#374151; text-decoration:none;}
-    .flash{padding:8px 12px; background:#ecfccb; border-radius:6px; margin:12px 0;}
-    .grid{display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-top:16px;}
-    .card{background:#fff; border-radius:8px; padding:12px; box-shadow:0 6px 18px rgba(16,24,40,0.06); border:1px solid #eef2f7}
-    .thumb{height:160px; object-fit:cover; width:100%; border-radius:6px; background:#f3f4f6;}
-    .small-muted{color:#6b7280; font-size:0.9rem}
-    .btn{background:#2563eb; color:#fff; border:none; padding:8px 10px; border-radius:6px; cursor:pointer}
-    form.inline{display:inline;}
-    table.cart{width:100%; border-collapse:collapse}
-    table.cart td, table.cart th{padding:8px; border-bottom:1px solid #eef2f7}
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'ショップ')</title>
+
+    <!-- ちょっとだけ見た目整える（Bootstrap CDN） -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { padding-top: 60px; }
+        .product-card { min-height: 180px; }
+    </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
   <div class="container">
-    <header>
-      <div class="logo"><a href="{{ url('/') }}">Shining Will Shop</a></div>
-      <nav>
-        <a href="{{ route('products.index') }}">商品一覧</a>
-        <a href="{{ route('cart.index') }}">カート ({{ array_sum(array_column(session('cart', []), 'qty') ?: [0]) }})</a>
-      </nav>
-    </header>
-
-    @if(session('success'))
-      <div class="flash">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-      <div class="flash" style="background:#fee2e2;color:#991b1b">{{ session('error') }}</div>
-    @endif
-
-    <main>
-      @yield('content')
-    </main>
-
-    <footer style="margin-top:36px; color:#6b7280; font-size:0.9rem">
-      &copy; {{ date('Y') }} Shining Will Shop
-    </footer>
+    <a class="navbar-brand" href="{{ url('/') }}">アイドルグッズ店</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="{{ route('cart.index') }}">カート</a></li>
+      </ul>
+    </div>
   </div>
+</nav>
+
+<div class="container">
+    @if(session('flash'))
+      <div class="alert alert-info">{{ session('flash') }}</div>
+    @endif
+
+    @yield('content')
+</div>
+
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+async function postJson(url, data) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': csrfToken,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data || {})
+  });
+  return res.json();
+}
+
+// 決済開始：/checkout/create に対してセッションのあるブラウザから POST し、返ってきた url に遷移
+async function startCheckout() {
+  try {
+    const res = await postJson("{{ route('checkout.create') }}", {});
+    if (res.error) {
+      alert(res.error);
+      return;
+    }
+    if (res.url) {
+      // Stripe Checkout の外部 URL に遷移
+      window.location.href = res.url;
+    } else if (res.id && res.url) {
+      window.location.href = res.url;
+    } else {
+      alert('決済セッションの作成に失敗しました');
+      console.log(res);
+    }
+  } catch (e) {
+    console.error(e);
+    alert('決済開始中にエラーが発生しました');
+  }
+}
+</script>
+
 </body>
 </html>

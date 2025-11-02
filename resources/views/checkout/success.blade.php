@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container text-center">
-    <h1>購入完了🎉</h1>
-    <p>{{ $message ?? 'ご購入ありがとうございました！' }}</p>
+@section('title', '購入完了')
 
-    <a href="{{ route('products.index') }}" class="btn btn-success mt-3">商品一覧に戻る</a>
+@section('content')
+<div class="text-center">
+  <h1>ご購入ありがとうございました</h1>
+  <p>注文の処理が完了しました。確認メールが届きます。</p>
+  <a class="btn btn-primary" href="{{ route('products.index') }}">トップへ戻る</a>
 </div>
 @endsection

@@ -2,46 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function index()
+    // get or create cart by session_id (frontend should supply session id or use auth user)
+    protected function getCartBySession(Request $request)
     {
-        return view('cart.index');
+        $sessionId = $request->session()->getId();
+        $cart = Cart::firstOrCreate(['session_id' => $sessionId]);
+        return $cart;
     }
 
-    public function add(Request $request, $id)
+    public function index(Request $request)
     {
-        $product = Product::findOrFail($id);
-        $cart = session()->get('cart', []);
+        $cart = $this->getCartBySession($request);
+        $cart->load('items.product');
+        return response()->json($cart);
+    }
 
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity']++;
+    public function add(Request $request)
+    {
+        $cart = $this->getCartBySession($request);
+        $product = Product::findOrFail($request->input('product_id'));
+        $quantity = max(1, (int)$request->input('quantity', 1));
+
+        $item = $cart->items()->where('product_id', $product->id)->first();
+        if ($item) {
+            $item->quantity += $quantity;
+            $item->save();
         } else {
-            $cart[$id] = [
-                'title' => $product->title,
-                'price' => $product->price,
-                'quantity' => 1,
-            ];
+            $cart->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+            ]);
         }
 
-        session()->put('cart', $cart);
-        return redirect()->route('cart.index');
+        return response()->json(['message' => 'added', 'cart' => $cart->load('items.product')]);
     }
 
-    public function remove($id)
+    public function update(Request $request, $itemId)
     {
-        $cart = session()->get('cart', []);
-        unset($cart[$id]);
-        session()->put('cart', $cart);
-        return redirect()->route('cart.index');
+        $cart = $this->getCartBySession($request);
+        $item = $cart->items()->findOrFail($itemId);
+        $quantity = max(0, (int)$request->input('quantity', 1));
+        if ($quantity === 0) {
+            $item->delete();
+            return response()->json(['message' => 'removed']);
+        }
+        $item->quantity = $quantity;
+        $item->save();
+        return response()->json(['message' => 'updated', 'item' => $item]);
     }
 
-    public function clear()
+    public function remove(Request $request, $itemId)
     {
-        session()->forget('cart');
-        return redirect()->route('cart.index');
+        $cart = $this->getCartBySession($request);
+        $item = $cart->items()->findOrFail($itemId);
+        $item->delete();
+        return response()->json(['message' => 'removed']);
     }
 }

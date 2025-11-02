@@ -2,120 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\OrderService;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\InventoryReservation;
 use App\Models\Product;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Stripe\StripeClient;
-use Illuminate\Support\Facades\Config;
+use Stripe\Stripe;
+use Stripe\Checkout\Session as CheckoutSession;
 
 class CheckoutController extends Controller
 {
-    protected OrderService $orderService;
-    protected StripeClient $stripe;
-
-    public function __construct(OrderService $orderService)
+    // Create Stripe Checkout session from current cart
+    public function create(Request $request)
     {
-        $this->middleware('auth');
-        $this->orderService = $orderService;
-        $this->stripe = new StripeClient(config('services.stripe.secret'));
-    }
-
-    /**
-     * Create a Stripe Checkout session for the current user's cart (session-based cart).
-     * Expects cart stored in session('cart', []) with keys product_id => ['title','price','qty','image']
-     */
-    public function createSession(Request $request)
-    {
-        $user = Auth::user();
-        $cart = session('cart', []);
-
-        if (empty($cart)) {
-            return back()->with('error', 'カートが空です。商品を追加してください。');
+        $sessionId = $request->session()->getId();
+        $cart = Cart::where('session_id', $sessionId)->with('items.product')->first();
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json(['error' => 'カートが空です'], 400);
         }
 
-        // Pull shop config
-        $shippingFee = (int) config('shop.shipping_fee', 0);
-        $taxRate = (int) config('shop.tax_rate', 0);
-        $taxInclusive = (bool) config('shop.tax_included', false);
-        $currency = config('shop.currency', 'JPY');
-
-        // Create order skeleton
-        $shippingAddress = $request->input('shipping_address', null);
-        $order = $this->orderService->createOrderFromCart($cart, $user->id, $shippingAddress, $taxInclusive, $shippingFee, $taxRate);
-
-        // Build Stripe line items
-        $lineItems = [];
-        foreach ($order->items as $item) {
-            $product = Product::find($item->product_id);
-
-            $images = [];
-            if ($product) {
-                // attempt to build image url from S3 if images stored as paths
-                if (! empty($product->images) && is_array($product->images) && count($product->images)) {
-                    $path = $product->images[0];
-                    try {
-                        $images[] = Storage::disk('s3')->url($path);
-                    } catch (\Throwable $e) {
-                        // fallback: leave images empty
-                    }
-                } elseif (! empty($product->image)) {
-                    try {
-                        $images[] = Storage::disk('s3')->url($product->image);
-                    } catch (\Throwable $e) {
-                        //
-                    }
-                }
+        // Check stock for all items and create reservations
+        $reservations = [];
+        foreach ($cart->items as $item) {
+            /** @var Product $product */
+            $product = $item->product;
+            if ($product->stock < $item->quantity) {
+                return response()->json(['error' => "在庫不足: {$product->name}"], 400);
             }
+        }
 
-            $lineItems[] = [
+        // Create reservations (transaction not strictly necessary but safer)
+        foreach ($cart->items as $item) {
+            $res = InventoryReservation::create([
+                'product_id' => $item->product->id,
+                'session_id' => $sessionId,
+                'quantity' => $item->quantity,
+                'expires_at' => Carbon::now()->addMinutes(15),
+                'status' => 'reserved',
+            ]);
+            $reservations[] = $res->id;
+        }
+
+        Stripe::setApiKey(config('services.stripe.secret'));
+
+        $line_items = [];
+        foreach ($cart->items as $item) {
+            $line_items[] = [
                 'price_data' => [
-                    'currency' => strtolower($currency),
+                    'currency' => 'jpy',
                     'product_data' => [
-                        'title' => $item->title ?: ($product->title ?? 'Product'),
-                        'images' => $images,
+                        'name' => $item->product->name,
                     ],
-                    'unit_amount' => (int) $item->price, // yen (no cents for JPY)
+                    'unit_amount' => $item->product->price,
                 ],
-                'quantity' => (int) $item->qty,
+                'quantity' => $item->quantity,
             ];
         }
 
-        // Add shipping as a line item (flat fee)
-        if ($order->shipping_fee > 0) {
-            $lineItems[] = [
-                'price_data' => [
-                    'currency' => strtolower($currency),
-                    'product_data' => [
-                        'title' => 'Shipping Fee',
-                    ],
-                    'unit_amount' => (int) $order->shipping_fee,
-                ],
-                'quantity' => 1,
-            ];
-        }
+        // Stripe metadata: reservation ids joined by comma
+        $metadata = [
+            'reservation_ids' => implode(',', $reservations),
+            'session_id' => $sessionId,
+        ];
 
-        // Create Stripe Checkout Session
-        $session = $this->stripe->checkout->sessions->create([
+        $session = CheckoutSession::create([
             'payment_method_types' => ['card'],
+            'line_items' => $line_items,
             'mode' => 'payment',
-            'customer_email' => $user->email,
-            'line_items' => $lineItems,
-            'success_url' => config('app.url') . '/orders/success?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => config('app.url') . '/cart',
-            'metadata' => [
-                'order_id' => $order->id,
-                'user_id' => $user->id,
-            ],
-            'client_reference_id' => (string) $user->id,
+            'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('checkout.cancel'),
+            'metadata' => $metadata,
         ]);
 
-        // Save stripe session id on the order so webhook can find it
-        $order->stripe_session_id = $session->id;
-        $order->save();
+        // Save session id into reservations
+        InventoryReservation::whereIn('id', $reservations)->update(['session_id' => $session->id]);
 
-        // Return the session id to client (if SPA or AJAX)
-        return response()->json(['id' => $session->id, 'checkout_url' => $session->url ?? null]);
+        return response()->json(['id' => $session->id, 'url' => $session->url]);
+    }
+
+    public function success(Request $request)
+    {
+        return view('checkout.success', ['session_id' => $request->query('session_id')]);
+    }
+
+    public function cancel(Request $request)
+    {
+        // Optionally release reservations associated with this session immediately
+        return view('checkout.cancel');
     }
 }

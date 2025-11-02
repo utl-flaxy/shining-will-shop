@@ -1,69 +1,64 @@
 @extends('layouts.app')
 
-@section('title','カート')
+@section('title', 'カート')
 
 @section('content')
-  <h2>カート</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>カート</h1>
+  <a class="btn btn-outline-primary" href="{{ route('products.index') }}">買い物を続ける</a>
+</div>
 
-  @if($items->isEmpty())
-    <p>カートに商品がありません。</p>
-    <a href="{{ route('products.index') }}" class="btn">商品一覧に戻る</a>
-  @else
-    <form method="post" action="{{ route('cart.update') }}">
-      @csrf
-      <table class="cart" style="margin-top:12px">
-        <thead>
-          <tr>
-            <th>商品</th>
-            <th>単価</th>
-            <th>数量</th>
-            <th>小計</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach($items as $item)
-            <tr>
-              <td style="display:flex;gap:10px; align-items:center">
-                @if($item['image'])
-                  <img src="{{ asset('storage/' . $item['image']) }}" alt="" width="72" height="72" style="object-fit:cover; border-radius:6px">
-                @endif
-                <div>
-                  <div style="font-weight:600">{{ $item['title'] ?? $item['name'] ?? '' }}</div>
-                </div>
-              </td>
-              <td>¥{{ number_format($item['price']) }}</td>
-              <td>
-                <input type="number" name="qty" value="{{ $item['qty'] }}" min="0" data-product-id="{{ $item['product_id'] }}" style="width:80px; padding:6px;">
-                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                <div class="small-muted">0にすると削除されます</div>
-              </td>
-              <td>¥{{ number_format($item['subtotal']) }}</td>
-              <td>
-                <form method="post" action="{{ route('cart.remove') }}">
-                  @csrf
-                  <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                  <button class="btn" style="background:#ef4444">削除</button>
-                </form>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
+@if($cart && $cart->items->isNotEmpty())
+  <table class="table">
+    <thead>
+      <tr>
+        <th>商品</th>
+        <th>単価</th>
+        <th>数量</th>
+        <th>小計</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @php $total = 0; @endphp
+      @foreach($cart->items as $item)
+        @php $sub = $item->quantity * $item->product->price; $total += $sub; @endphp
+        <tr>
+          <td>{{ $item->product->name }}</td>
+          <td>{{ number_format($item->product->price) }}円</td>
+          <td>
+            <form method="POST" action="{{ route('cart.update', $item->id) }}" class="d-inline-flex">
+              @csrf
+              <input type="number" name="quantity" value="{{ $item->quantity }}" min="0" class="form-control form-control-sm" style="width:80px;">
+              <button class="btn btn-sm btn-outline-secondary ms-2">更新</button>
+            </form>
+          </td>
+          <td>{{ number_format($sub) }}円</td>
+          <td>
+            <form method="POST" action="{{ route('cart.remove', $item->id) }}">
+              @csrf
+              @method('DELETE')
+              <button class="btn btn-sm btn-danger">削除</button>
+            </form>
+          </td>
+        </tr>
+      @endforeach
+      <tr>
+        <td colspan="3" class="text-end"><strong>合計</strong></td>
+        <td><strong>{{ number_format($total) }}円</strong></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
 
-      <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center">
-        <div>
-          <button formaction="{{ route('cart.clear') }}" formmethod="post" class="btn" style="background:#ef4444">カートを空にする</button>
-        </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" onclick="startCheckout()">決済に進む</button>
+    <a class="btn btn-outline-secondary" href="{{ route('products.index') }}">買い物を続ける</a>
+  </div>
 
-        <div style="text-align:right">
-          <div style="font-size:1.1rem; font-weight:700">合計：¥{{ number_format($total) }}</div>
-          <div style="margin-top:8px">
-            {{-- ここで決済への遷移（Stripe Checkout など）を実装します --}}
-            <button type="submit" class="btn" style="margin-top:8px">カートを更新</button>
-          </div>
-        </div>
-      </div>
-    </form>
-  @endif
+@else
+  <div class="alert alert-info">カートは空です。</div>
+  <a class="btn btn-primary" href="{{ route('products.index') }}">商品一覧へ</a>
+@endif
+
 @endsection

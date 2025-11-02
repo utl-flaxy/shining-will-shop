@@ -3,44 +3,30 @@
 @section('title', $product->name)
 
 @section('content')
-  <a href="{{ route('products.index') }}" class="small-muted">← 商品一覧へ戻る</a>
-
-  <div style="display:flex; gap:20px; margin-top:12px; align-items:flex-start">
-    <div style="flex:0 0 360px">
-      @php
-        $images = is_array($product->images) ? $product->images : [];
-      @endphp
-
-      @if(count($images))
-        <img src="{{ asset('storage/' . $images[0]) }}" alt="{{ $product->name }}" style="width:100%; border-radius:8px;">
-        @if(count($images) > 1)
-          <div style="display:flex; gap:8px; margin-top:8px">
-            @foreach($images as $im)
-              <img src="{{ asset('storage/' . $im) }}" width="72" height="72" style="object-fit:cover; border-radius:6px">
-            @endforeach
-          </div>
-        @endif
-      @else
-        <div class="thumb" style="height:300px; display:flex;align-items:center;justify-content:center">No Image</div>
-      @endif
-    </div>
-
-    <div style="flex:1">
-      <h1 style="margin:0 0 6px">{{ $product->name }}</h1>
-      <div class="small-muted">¥{{ number_format((int)$product->price) }}</div>
-      <div style="margin-top:12px; color:#374151">{!! nl2br(e($product->description)) !!}</div>
-
-      <form method="post" action="{{ route('cart.add') }}" style="margin-top:18px">
-        @csrf
-        <input type="hidden" name="product_id" value="{{ $product->id }}">
-        <label>
-          数量：
-          <input type="number" name="qty" value="1" min="1" style="width:80px; padding:6px; margin-left:6px;">
-        </label>
-        <div style="margin-top:12px">
-          <button class="btn">カートに入れる</button>
-        </div>
-      </form>
-    </div>
+<div class="row">
+  <div class="col-md-6">
+    @if(!empty($product->images) && is_array($product->images) && count($product->images))
+      <img src="{{ $product->images[0] }}" class="img-fluid" alt="{{ $product->name }}">
+    @else
+      <div class="border bg-light p-5 text-center">No image</div>
+    @endif
   </div>
+  <div class="col-md-6">
+    <h1>{{ $product->name }}</h1>
+    <p class="text-muted">{{ number_format($product->price) }}円</p>
+    <p>{{ $product->description }}</p>
+    <p>在庫: {{ $product->stock }}</p>
+
+    <form method="POST" action="{{ route('cart.add') }}" class="mt-3">
+      @csrf
+      <input type="hidden" name="product_id" value="{{ $product->id }}">
+      <div class="mb-2">
+        <label for="qty" class="form-label">数量</label>
+        <input id="qty" name="quantity" type="number" min="1" value="1" class="form-control" style="width:120px;">
+      </div>
+      <button class="btn btn-success">カートに入れる</button>
+      <a class="btn btn-outline-secondary" href="{{ route('products.index') }}">一覧に戻る</a>
+    </form>
+  </div>
+</div>
 @endsection
