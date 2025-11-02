@@ -26,7 +26,7 @@ jobs:
             - pdo_sqlite
           coverage: none
 
-      - name: Debug: show PHP and Composer versions
+      - name: Debug show PHP and Composer versions
         run: |
           echo "--- php -v ---"
           php -v || true
