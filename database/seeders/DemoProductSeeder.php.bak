@@ -1,0 +1,57 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Product;
+
+class DemoProductSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $items = [
+            [
+                'name' => 'Shining Tシャツ (ネイビー)',
+                'description' => "柔らかいコットン、サイズ S/M/L。シンプルなロゴ入り。",
+                'price' => 2500,
+                'sku' => 'SW-TSHIRT-NV-001',
+                'stock' => 50,
+                'images' => null,
+                'is_published' => true,
+            ],
+            [
+                'name' => 'Shining マグカップ',
+                'description' => "容量 350ml。電子レンジ対応のセラミック製。",
+                'price' => 1200,
+                'sku' => 'SW-MUG-001',
+                'stock' => 100,
+                'images' => null,
+                'is_published' => true,
+            ],
+            [
+                'name' => 'Shining トートバッグ',
+                'description' => "キャンバス素材、内ポケット付き。A4対応サイズ。",
+                'price' => 1800,
+                'sku' => 'SW-TOTE-001',
+                'stock' => 30,
+                'images' => null,
+                'is_published' => true,
+            ],
+        ];
+
+        foreach ($items as $item) {
+            // SKU が存在すればそれで updateOrCreate。なければ name をキーにする。
+            if (!empty($item['sku'])) {
+                Product::updateOrCreate(
+                    ['sku' => $item['sku']],
+                    $item
+                );
+            } else {
+                Product::updateOrCreate(
+                    ['name' => $item['name']],
+                    $item
+                );
+            }
+        }
+    }
+}

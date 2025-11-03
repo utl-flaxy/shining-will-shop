@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Filament\AdminShining\Resources;
+
+use App\Models\Product;
+use App\Filament\AdminShining\Resources\ProductResource\Pages as Pages;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema; // ← v4 は Schema ベース
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+
+class ProductResource extends Resource
+{
+    protected static ?string $model = Product::class;
+
+    public static function getNavigationLabel(): string
+    {
+        return '商品一覧（テスト）';
+    }
+
+    // ★ テスト：FileUpload と TextInput だけ
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->schema([
+            FileUpload::make('images')
+                ->label('商品画像 (テスト)')
+                ->image()
+                ->multiple()
+                ->directory('products')
+                ->disk('public'),
+            TextInput::make('name')->label('商品名 (テスト)'),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table->columns([
+            TextColumn::make('id'),
+            TextColumn::make('name'),
+        ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index'  => Pages\ListProducts::route('/'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
+}

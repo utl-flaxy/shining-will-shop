@@ -1,0 +1,18 @@
+services:
+  proxy:
+    image: nginx:stable
+    container_name: shining-will-shop-proxy
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+      - "8443:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - sail
+
+networks:
+  sail:
+    external: true
+    name: shining-will-shop_sail

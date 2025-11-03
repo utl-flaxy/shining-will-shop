@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('stripe_events', function (Blueprint ) {
+            ->bigIncrements('id');
+            ->string('stripe_event_id')->unique();
+            ->string('type')->index();
+            ->json('payload')->nullable();
+            ->timestamp('processed_at')->nullable();
+            ->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('stripe_events');
+    }
+};

@@ -1,0 +1,12 @@
+{
+    auto_https off
+}
+
+shop.shining-will.co.jp {
+    tls /home/wsl/shining-will-shop/ssl/shop.shining-will.co.jp.pem /home/wsl/shining-will-shop/ssl/shop.shining-will.co.jp-key.pem
+
+    reverse_proxy 127.0.0.1:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+    }
+}

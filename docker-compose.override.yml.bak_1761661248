@@ -1,0 +1,17 @@
+services:
+  laravel.test:
+    ports:
+      - "8080:80"
+
+version: '3.8'
+services:
+  worker:
+    image: 'sail-8.4/app'
+    environment:
+      - APP_ENV=local
+      - QUEUE_CONNECTION=database
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - mysql
+    command: php artisan queue:work --sleep=3 --tries=3

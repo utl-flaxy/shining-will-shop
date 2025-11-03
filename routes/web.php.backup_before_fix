@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Minimal clean routes file: root redirects to /products and product/cart
+| routes are defined below. Development-only dev-login preserved.
+|
+*/
+
+Route::get('/', function () {
+    return redirect('/products');
+});
+
+// === Development-only: quick login to Filament admin panel ===
+if (app()->environment('local')) {
+    Route::get('/adminShining/dev-login', function () {
+        $userModelClass = \App\Models\User::class;
+
+        $user = $userModelClass::first();
+        if (! $user) {
+            $user = $userModelClass::create([
+                'name' => 'Admin',
+                'email' => 'admin@example.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            ]);
+        }
+
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        return redirect('/adminShining');
+    })->name('dev.adminShining.login');
+
+    Route::get('/login', function () {
+        return redirect()->route('dev.adminShining.login');
+    })->name('login');
+}
+
+// Product listing / detail
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Cart
+Route::get('/cart', [ProductController::class, 'cartIndex'])->name('cart.index');
+Route::post('/cart/add', [ProductController::class, 'cartAdd'])->name('cart.add');
+Route::post('/cart/update', [ProductController::class, 'cartUpdate'])->name('cart.update');
+Route::post('/cart/remove', [ProductController::class, 'cartRemove'])->name('cart.remove');
+Route::post('/cart/clear', [ProductController::class, 'cartClear'])->name('cart.clear');
+
+// Include additional route files (checkout, webhooks, etc.)
+/*
+  routes/checkout_routes.php defines:
+    - POST /checkout/create-session (protected)
+    - POST /stripe/webhook (public)
+*/
+if (file_exists(__DIR__ . '/checkout_routes.php')) {
+    require __DIR__ . '/checkout_routes.php';
+}
+
+if (file_exists(__DIR__ . '/checkout_routes.php')) {
+    require __DIR__ . '/checkout_routes.php';
+}
+
