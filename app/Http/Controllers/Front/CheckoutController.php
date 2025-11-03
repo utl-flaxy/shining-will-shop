@@ -32,7 +32,7 @@ class CheckoutController extends Controller
 
         $order = Order::create([
             'user_id' => auth()->id(),
-            'title' => auth()->user()->title ?? null,
+            'title' => auth()->user()->name ?? null,
             'email' => auth()->user()->email ?? null,
             'address' => null,
             'shipping_cost' => $shipping,
@@ -43,7 +43,7 @@ class CheckoutController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $it['product']->id,
-                'product_name' => $it['product']->title,
+                'product_name' => $it['product']->name,
                 'price' => $it['price'],
                 'quantity' => $it['qty'],
                 'options' => null,
@@ -58,7 +58,7 @@ class CheckoutController extends Controller
             $lineItems[] = [
                 'price_data' => [
                     'currency' => 'jpy',
-                    'product_data' => ['title' => $it['product']->title],
+                    'product_data' => ['name' => $it['product']->name],
                     'unit_amount' => $it['price'], // 円
                 ],
                 'quantity' => $it['qty'],

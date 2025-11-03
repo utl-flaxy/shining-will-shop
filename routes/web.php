@@ -22,9 +22,11 @@ Route::post('/cart/add', [FrontCartController::class, 'add'])->name('cart.add');
 Route::post('/cart/update', [FrontCartController::class, 'update'])->name('cart.update');
 Route::post('/cart/remove', [FrontCartController::class, 'remove'])->name('cart.remove');
 
-// Front-end Checkout Routes
-Route::post('/checkout/start', [FrontCheckoutController::class, 'start'])->name('checkout.start');
-Route::get('/checkout/success', [FrontCheckoutController::class, 'success'])->name('checkout.success');
+// Front-end Checkout Routes (require authentication)
+Route::middleware('auth')->group(function () {
+    Route::post('/checkout/start', [FrontCheckoutController::class, 'start'])->name('checkout.start');
+    Route::get('/checkout/success', [FrontCheckoutController::class, 'success'])->name('checkout.success');
+});
 Route::get('/checkout/cancel', [FrontCheckoutController::class, 'cancel'])->name('checkout.cancel');
 
 // Stripe webhook
