@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  worker:
+    image: sail-8.4/app
+    container_name: shining-will-shop-worker
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - /home/wsl/shining-will-shop:/var/www/html:cached
+    environment:
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      - APP_ENV=production
+      - QUEUE_CONNECTION=database
+    entrypoint: [ "" ]
+    command: >
+      bash -lc "echo 'Waiting for mysql DNS and TCP...';
+             for i in \$(seq 1 60); do
+               if getent hosts mysql >/dev/null 2>&1 && bash -c 'echo > /dev/tcp/mysql/3306' >/dev/null 2>&1; then
+                 echo 'MySQL reachable'; break;
+               fi;
+               echo 'Waiting for mysql...' && sleep 2;
+             done;
+             php /var/www/html/artisan queue:work database --sleep=3 --tries=3 --timeout=60 --memory=512"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+
+networks:
+  default:
+    external:
+      name: shining-will-shop_sail
