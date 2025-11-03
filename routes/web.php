@@ -5,58 +5,33 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\StripePaymentController; // 追加 (実装済みを想定)
+use App\Http\Controllers\Front\ProductController as FrontProductController;
+use App\Http\Controllers\Front\CartController as FrontCartController;
+use App\Http\Controllers\Front\CheckoutController as FrontCheckoutController;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
-// Cart
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/update/{itemId}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/remove/{itemId}', [CartController::class, 'remove'])->name('cart.remove');
+// Front-end Product Routes (with search/filter)
+Route::get('/', [FrontProductController::class, 'index'])->name('store.index');
+Route::get('/products', [FrontProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [FrontProductController::class, 'show'])->name('store.product');
 
-// Checkout
-Route::post('/checkout/create', [CheckoutController::class, 'create'])->name('checkout.create');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+// Front-end Cart Routes
+Route::get('/cart', [FrontCartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [FrontCartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [FrontCartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [FrontCartController::class, 'remove'])->name('cart.remove');
 
-// Stripe: create PaymentIntent (called by frontend to get client_secret)
-Route::post('/payment-intent', [StripePaymentController::class, 'createPaymentIntent'])->name('stripe.payment_intent');
+// Front-end Checkout Routes
+Route::post('/checkout/start', [FrontCheckoutController::class, 'start'])->name('checkout.start');
+Route::get('/checkout/success', [FrontCheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/cancel', [FrontCheckoutController::class, 'cancel'])->name('checkout.cancel');
 
-// Stripe webhook (must be POST) — 既存の /stripe/webhook をそのまま使用
-Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
+// Stripe webhook
+Route::post('/stripe/webhook', [\App\Http\Controllers\Webhook\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
-/*
-|---------------------------------------------------------------------
-| Simple product routes for local verification
-|---------------------------------------------------------------------
-|
-| These are minimal closures that render the existing Blade views.
-| If you already have controllers, remove or adapt these.
-|
-*/
-
-Route::get('/', function () {
-    return redirect()->route('products.index');
-})->name('home');
-
-Route::get('/products', function () {
-    $products = Product::orderBy('id','desc')->get();
-    return view('products.index', compact('products'));
-})->name('products.index');
-
-Route::get('/products/{product}', function (Product $product) {
-    return view('products.show', compact('product'));
-})->name('products.show');
-
-/*
-|----------------------------------------------------------------------
-| API Routes
-|----------------------------------------------------------------------
-*/
-
-// routes/api.php に追加
+// Unthrottled webhook for local development
 if (env("ENABLE_LOCAL_WEBHOOK_UNTHROTTLED", false)) {
-    Route::post('stripe/webhook-unthrottled', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])
-    ->withoutMiddleware('throttle:api');
+    Route::post('stripe/webhook-unthrottled', [\App\Http\Controllers\Webhook\StripeWebhookController::class, 'handle'])
+        ->withoutMiddleware('throttle:api');
 }
- // throttle:api を外す
