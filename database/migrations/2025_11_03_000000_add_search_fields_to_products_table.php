@@ -15,8 +15,9 @@ return new class extends Migration
             }
             
             // Add is_active if it doesn't exist
+            // Place after the last existing column to avoid dependency on specific columns
             if (!Schema::hasColumn('products', 'is_active')) {
-                $table->boolean('is_active')->default(true)->after('images');
+                $table->boolean('is_active')->default(true);
             }
         });
     }
