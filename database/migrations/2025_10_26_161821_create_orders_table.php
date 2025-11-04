@@ -4,27 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void
-    {
-        // 既に orders テーブルが存在する場合は作成をスキップ
-        if (Schema::hasTable('orders')) {
-            return;
-        }
-
+return new class extends Migration {
+    public function up(): void {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            // 必要に応じて既存スキーマに合わせてカラムを調整してください
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->integer('total_amount')->default(0);
-            $table->string('status')->default('pending');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->enum('status', [
+                'pending_payment', 'paid', 'awaiting_shipment',
+                'shipped', 'refunded', 'cancelled'
+            ])->default('pending_payment');
+            $table->integer('total_amount');
+            $table->enum('payment_method', ['card', 'bank_transfer', 'on_site']);
+            $table->dateTime('paid_at')->nullable();
+            $table->dateTime('shipped_at')->nullable();
+            $table->dateTime('refunded_at')->nullable();
+            $table->text('memo')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('orders');
     }
 };
