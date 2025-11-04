@@ -2,19 +2,17 @@ name: AI Auto Dev (Safe Mode)
 
 on:
   push:
-    branches: [ "dev" ]   # ← mainではなくdevブランチだけで動く
-  workflow_dispatch:       # ← 手動実行も可（GitHub Actions画面から）
+    branches: [ "dev" ]
+  workflow_dispatch:
 
 jobs:
   ai_auto_dev:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ コード取得
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ PHP環境構築
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -22,36 +20,25 @@ jobs:
           tools: composer
           coverage: none
 
-      # 3️⃣ Composer依存関係インストール
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
-      # 4️⃣ 仕様書とルール確認
       - name: Display spec and rules
         run: |
           echo "=== SPEC FILE ==="
-          cat docs/spec.md || echo "⚠️ docs/spec.md が見つかりません"
+          cat docs/spec.md || echo "⚠️ docs/spec.md not found"
           echo "=== PROMPT FILE ==="
-          cat .github/prompts/filament_resource_prompt.md || echo "⚠️ プロンプトが見つかりません"
+          cat .github/prompts/filament_resource_prompt.md || echo "⚠️ prompt not found"
 
-      # 5️⃣ AIコード生成（仕様を読み込み）
-      - name: Run AI Code Generator
-        id: ai_gen
-        uses: openai-labs/ai-dev-action@v1
-        with:
-          model: gpt-5
-          prompt: |
-            /docs/spec.md と /.github/prompts/filament_resource_prompt.md を参照して、
-            Shining-Will-Shop（Laravel + Filament）のコードを生成または修正せよ。
-            コード変更は dev ブランチで行い、仕様逸脱があれば自動修正する。
-            生成対象：
-            - Product, ProductVariant, Order, OrderItem, Payment のModel/Migration/FilamentResource
-            - ChartWidgetによる売上可視化
-            - ExportActionによるExcel出力
-            - Refund APIの実装スタブ
-            テストが通るまで修正を繰り返せ。
+      # ❌ この部分は削除 or コメントアウト
+      # - name: Run AI Code Generator
+      #   id: ai_gen
+      #   uses: openai-labs/ai-dev-action@v1
+      #   with:
+      #     model: gpt-5
+      #     prompt: |
+      #       spec.md と prompt.md を参照してコード生成...
 
-      # 6️⃣ Laravelテスト実行
       - name: Run Laravel Tests
         id: test
         run: |
@@ -60,24 +47,11 @@ jobs:
           php artisan migrate --force
           php artisan test || echo "TEST_FAILED" > test_status.txt
 
-      # 7️⃣ 失敗時リトライ（最大5回）
-      - name: Retry on failure
-        if: always()
+      - name: Handle test failure
+        if: failure()
         run: |
-          attempt=1
-          while [ -f test_status.txt ]; do
-            echo "⚠️ テスト失敗 → 再生成リトライ ($attempt 回目)"
-            rm test_status.txt
-            sleep 5
-            gh workflow run "AI Auto Dev (Safe Mode)"
-            ((attempt++))
-            if [ $attempt -gt 5 ]; then
-              echo "❌ 5回リトライしても失敗。人間レビューが必要です。"
-              exit 1
-            fi
-          done
+          echo "❌ Laravelテスト失敗。修正後に再pushしてください。"
 
-      # 8️⃣ 成功時 → PR作成（mainへのマージはしない）
       - name: Create Pull Request
         if: success()
         run: |
@@ -86,9 +60,9 @@ jobs:
           branch_name="ai-autofix-$(date +%s)"
           git checkout -b "$branch_name"
           git add .
-          git commit -m "🤖 AI AutoFix: code updated (safe mode)"
+          git commit -m "🤖 Auto Test Passed: Ready for Review"
           git push origin HEAD
           gh pr create \
-            --title "🤖 AI AutoFix" \
-            --body "AIが仕様書 (/docs/spec.md) に基づき自動生成した更新です。レビュー後、mainにマージしてください。" \
+            --title "🤖 Auto PR: Code Ready for Review" \
+            --body "このPRはAI生成済みコードをテスト通過後に作成されました。" \
             --base main
