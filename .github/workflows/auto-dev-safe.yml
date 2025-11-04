@@ -82,11 +82,15 @@ jobs:
           git checkout -b "$branch_name"
           git add .
           git commit -m "🤖 Auto Test Passed: Ready for Review"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD
+
+          # ✅ push（リモート追跡ブランチ設定付き）
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} "$branch_name":"$branch_name"
+
+          # ✅ PR作成（headを明示）
           gh pr create \
             --title "🤖 Auto PR: Code Ready for Review" \
             --body "このPRはAI生成済みコードをテスト通過後に作成されました。" \
-            --base main
+            --base main \
             --head "$branch_name"
 
       # ✅ 自動マージ（競合なければmainに統合）
