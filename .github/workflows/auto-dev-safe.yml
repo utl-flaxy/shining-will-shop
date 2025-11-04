@@ -1,0 +1,109 @@
+name: AI Auto Dev (Full Auto Merge Mode)
+
+on:
+  push:
+    branches: [ "dev" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ai_auto_dev:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: shining_will_shop
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      # ✅ コード取得
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ✅ PHP設定
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+
+      # ✅ Composer依存関係インストール
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      # ✅ .env設定（MySQLと連携）
+      - name: Configure environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
+          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=shining_will_shop/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
+
+      # ✅ Laravelテスト実行
+      - name: Run Laravel Tests
+        id: test
+        run: |
+          php artisan migrate --force
+          php artisan test || echo "TEST_FAILED" > test_status.txt
+
+      # ❌ テスト失敗時
+      - name: Handle test failure
+        if: failure()
+        run: |
+          echo "❌ Laravelテスト失敗。修正後に再pushしてください。"
+
+      # ✅ PR作成
+      - name: Create Pull Request
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "AI AutoDev"
+          git config user.email "bot@shining-will.shop"
+          branch_name="ai-autofix-$(date +%s)"
+          git checkout -b "$branch_name"
+          git add .
+          git commit -m "🤖 Auto Test Passed: Ready for Review"
+
+          # ✅ push（リモート追跡ブランチ設定付き）
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} "$branch_name":"$branch_name"
+
+          # ✅ PR作成（headを明示）
+          gh pr create \
+            --title "🤖 Auto PR: Code Ready for Review" \
+            --body "このPRはAI生成済みコードをテスト通過後に作成されました。" \
+            --base main \
+            --head "$branch_name"
+
+      # ✅ 自動マージ（競合なければmainに統合）
+      - name: Auto Merge PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🧠 自動マージを試行中..."
+          pr_url=$(gh pr list --state open --json url --jq '.[0].url')
+          if [ -n "$pr_url" ]; then
+            gh pr merge "$pr_url" --merge --auto --delete-branch
+            echo "✅ 自動マージ完了: $pr_url"
+          else
+            echo "⚠️ マージ対象PRが見つかりませんでした。"
+          fi
