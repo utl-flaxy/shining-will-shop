@@ -9,6 +9,20 @@ jobs:
   ai_auto_dev:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: shining_will_shop
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,27 +44,27 @@ jobs:
           echo "=== PROMPT FILE ==="
           cat .github/prompts/filament_resource_prompt.md || echo "⚠️ prompt not found"
 
-      # ❌ この部分は削除 or コメントアウト
-      # - name: Run AI Code Generator
-      #   id: ai_gen
-      #   uses: openai-labs/ai-dev-action@v1
-      #   with:
-      #     model: gpt-5
-      #     prompt: |
-      #       spec.md と prompt.md を参照してコード生成...
+      - name: Configure environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
+          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_PORT=.*/DB_PORT=3306/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=shining_will_shop/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
 
       - name: Run Laravel Tests
         id: test
         run: |
-          cp .env.example .env || true
-          php artisan key:generate
           php artisan migrate --force
           php artisan test || echo "TEST_FAILED" > test_status.txt
 
       - name: Handle test failure
         if: failure()
         run: |
-          echo "❌ Laravelテスト失敗。修正後に再pushしてください。"
+          echo "❌ Laravelテスト失敗。MySQL接続やマイグレーション設定を確認してください。"
 
       - name: Create Pull Request
         if: success()
