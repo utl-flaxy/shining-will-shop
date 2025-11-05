@@ -1,4 +1,4 @@
-name: 🧪 Auto Dev Safe (SQLite + 10x Retry + Auto Merge)
+name: 🧪 Auto Dev Safe (Persistent SQLite + 10x Retry + Auto Merge)
 
 on:
   push:
@@ -14,9 +14,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # 1️⃣ ソースを取得
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ PHPと依存関係をセットアップ
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -24,45 +26,46 @@ jobs:
           extensions: mbstring, sqlite3, bcmath, intl, fileinfo
           tools: composer:v2
 
+      # 3️⃣ composer install
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Create .env.testing
+      # 4️⃣ 永続SQLiteデータベースの作成
+      - name: Create persistent SQLite DB for testing
         run: |
+          mkdir -p database
+          touch database/testing.sqlite
           echo "APP_ENV=testing" > .env.testing
           echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env.testing
           echo "APP_DEBUG=true" >> .env.testing
           echo "DB_CONNECTION=sqlite" >> .env.testing
-          echo "DB_DATABASE=:memory:" >> .env.testing
+          echo "DB_DATABASE=$(pwd)/database/testing.sqlite" >> .env.testing
           echo "CACHE_DRIVER=array" >> .env.testing
           echo "SESSION_DRIVER=array" >> .env.testing
           echo "QUEUE_CONNECTION=sync" >> .env.testing
           echo "MAIL_MAILER=array" >> .env.testing
           cat .env.testing
 
-      # 🧩 migrateとtestを同一PHPプロセスで実行するように変更！
-      - name: Run tests with SQLite in-memory DB (10x retry)
+      # 5️⃣ テスト実行（最大10回再試行）
+      - name: Run Laravel tests (persistent DB + retry)
         run: |
           for i in {1..10}; do
-            echo "🧪 Running tests (attempt $i)..."
-            php -r "
-              echo \"[MIGRATE & TEST in same process]\\n\";
-              require 'vendor/autoload.php';
-              passthru('php artisan migrate:fresh --seed --env=testing');
-              passthru('php artisan test --env=testing', \$exit);
-              exit(\$exit);
-            "
-            if [ $? -eq 0 ]; then
-              echo '✅ Tests passed successfully.'
+            echo "🧪 Running test attempt $i..."
+            php artisan migrate:fresh --seed --env=testing
+            php artisan test --env=testing
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "✅ Tests passed on attempt $i."
               exit 0
             else
-              echo '⚠️ Test failed, retrying in 10 seconds...'
+              echo "⚠️ Test failed on attempt $i. Retrying in 10 seconds..."
               sleep 10
             fi
           done
-          echo '❌ All 10 attempts failed.'
+          echo "❌ All 10 attempts failed."
           exit 1
 
+      # 6️⃣ 成功時に dev → main を自動マージ
       - name: Auto merge dev → main
         if: github.ref == 'refs/heads/dev' && success()
         uses: devmasx/merge-branch@v1.4.0
