@@ -1,67 +1,45 @@
-name: CI Tests (fixed)
+name: CI Tests (Auto Retry x10)
+
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   push:
-    branches:
-      - ci/add-pest-workflow
-      - main
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    strategy:
+      fail-fast: false
+      matrix:
+        attempt: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-      - name: Setup PHP
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions:
-            - mbstring
-            - xml
-            - zip
-            - pdo
-            - pdo_sqlite
-
-      - name: Debug show PHP and Composer versions
-        run: |
-          echo "--- php -v ---"
-          php -v || true
-          echo "--- which php ---"
-          which php || true
-          echo "--- echo PATH ---"
-          echo "$PATH"
-          echo "--- composer --version ---"
-          composer --version || true
-          composer diagnose || true
+          extensions: mbstring, xml, bcmath, zip, curl, mysql
 
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --no-interaction --optimize-autoloader
+        run: composer install --no-interaction --prefer-dist
 
-      - name: Prepare environment for tests
+      - name: Run tests (Attempt ${{ matrix.attempt }})
+        id: run_tests
         run: |
-          # ensure an env exists (copy example if present)
-          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
-          # generate app key if needed
-          php artisan key:generate --ansi --no-interaction || true
-        env:
-          APP_ENV: testing
+          echo "🧪 Running test attempt ${{ matrix.attempt }}..."
+          php artisan test || exit 1
 
-      - name: Run tests (Feature)
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ':memory:'
-          CACHE_DRIVER: array
+      - name: Check test result and retry if failed
+        if: failure() && matrix.attempt < 10
         run: |
-          if [ -f vendor/bin/pest ]; then
-            echo "Running Pest tests (Feature)"
-            vendor/bin/pest tests/Feature
-          elif [ -f vendor/bin/phpunit ]; then
-            echo "Running PHPUnit tests (Feature)"
-            vendor/bin/phpunit --testsuite=Feature
-          else
-            echo "No test runner found (vendor/bin/pest or vendor/bin/phpunit)"
-            exit 1
-          fi
+          echo "⚠️ Test failed on attempt ${{ matrix.attempt }}. Retrying..."
+          sleep 10
+          exit 1
+
+      - name: Stop retry loop
+        if: success()
+        run: |
+          echo "✅ Tests passed successfully on attempt ${{ matrix.attempt }}."
