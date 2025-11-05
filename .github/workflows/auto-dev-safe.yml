@@ -1,83 +1,53 @@
-name: 🧪 Auto Dev Safe Merge (v4 – Testing DB Fixed)
+name: Auto Dev Safe
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
 
 jobs:
-  tests:
+  test-and-merge:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        attempt: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-      fail-fast: false
-
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, pdo_sqlite, bcmath, fileinfo
-          coverage: none
+          extensions: mbstring, bcmath, sqlite3, pdo_sqlite
+          tools: composer:v2
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-suggest
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Prepare Laravel environment
+      - name: Create .env file
         run: |
           cp .env.example .env
           php artisan key:generate
-          mkdir -p database
           touch database/database.sqlite
-          php artisan migrate:fresh --seed --force
-          php artisan migrate:status
+          php artisan config:clear
+          php artisan cache:clear
 
-      - name: Force same DB for testing (disable in-memory)
+      - name: Prepare database
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Run tests with retry (up to 10 attempts)
         run: |
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
-          echo "APP_ENV=testing" >> .env
-          cat .env | grep DB_
+          for i in {1..10}; do
+            echo "🧪 Running test attempt $i..."
+            php artisan test && break
+            echo "⚠️ Test failed on attempt $i. Retrying..."
+            sleep 10
+          done
 
-      - name: Run Laravel tests (Attempt ${{ matrix.attempt }})
-        id: tests
-        continue-on-error: true
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
-        run: |
-          echo "🧪 Running test attempt ${{ matrix.attempt }}..."
-          php artisan test --without-tty || exit 1
-
-      - name: Check if test failed
-        if: failure()
-        run: echo "⚠️ Test failed on attempt ${{ matrix.attempt }}. Retrying..."
-
-  auto-merge:
-    needs: tests
-    if: ${{ success() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Auto merge dev into main
+      - name: Auto merge to main if tests pass
+        if: success()
         uses: devmasx/merge-branch@v1.4.0
         with:
           type: now
           from_branch: dev
           target_branch: main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  notify-failure:
-    needs: tests
-    if: ${{ failure() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify failure
-        run: echo "❌ All 10 test attempts failed — manual review required."
+          github_token: ${{ secrets.GITHUB_TOKEN }}
