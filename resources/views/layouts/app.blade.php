@@ -1,78 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'ショップ')</title>
-
-    <!-- ちょっとだけ見た目整える（Bootstrap CDN） -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body { padding-top: 60px; }
-        .product-card { min-height: 180px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Shining Will Shop')</title>
+    @vite('resources/css/app.css')
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-  <div class="container">
-    <a class="navbar-brand" href="{{ url('/') }}">アイドルグッズ店</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ route('cart.index') }}">カート</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<body class="font-sans bg-[#fcfcfc] text-gray-900">
 
-<div class="container">
-    @if(session('flash'))
-      <div class="alert alert-info">{{ session('flash') }}</div>
-    @endif
+    {{-- ヘッダー --}}
+    <header class="sticky top-0 bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+            <a href="{{ route('store.index') }}" class="text-xl font-light tracking-widest">
+                Shining Will
+            </a>
+            <nav class="space-x-6 text-sm uppercase tracking-wider">
+                <a href="{{ route('store.index') }}" class="hover:underline">Home</a>
+                <a href="{{ route('store.index') }}" class="hover:underline">Item</a>
+                <a href="{{ route('store.index') }}" class="hover:underline">Category</a>
+                <a href="/about" class="hover:underline">About</a>
+            </nav>
+        </div>
+    </header>
 
-    @yield('content')
-</div>
+    {{-- ページコンテンツ --}}
+    <main>
+        @yield('content')
+    </main>
 
-<script>
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-async function postJson(url, data) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken,
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify(data || {})
-  });
-  return res.json();
-}
-
-// 決済開始：/checkout/create に対してセッションのあるブラウザから POST し、返ってきた url に遷移
-async function startCheckout() {
-  try {
-    const res = await postJson("{{ route('checkout.create') }}", {});
-    if (res.error) {
-      alert(res.error);
-      return;
-    }
-    if (res.url) {
-      // Stripe Checkout の外部 URL に遷移
-      window.location.href = res.url;
-    } else if (res.id && res.url) {
-      window.location.href = res.url;
-    } else {
-      alert('決済セッションの作成に失敗しました');
-      console.log(res);
-    }
-  } catch (e) {
-    console.error(e);
-    alert('決済開始中にエラーが発生しました');
-  }
-}
-</script>
+    {{-- フッター --}}
+    <footer class="bg-gray-100 mt-16 py-10 text-center text-sm text-gray-500">
+        <p>© {{ date('Y') }} Shining Will. All rights reserved.</p>
+        <div class="mt-3 space-x-4">
+            <a href="https://twitter.com/" target="_blank">Twitter</a>
+            <a href="https://youtube.com/" target="_blank">YouTube</a>
+        </div>
+    </footer>
 
 </body>
 </html>

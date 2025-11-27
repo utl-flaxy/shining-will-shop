@@ -2,93 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\InventoryReservation;
-use App\Models\Product;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Stripe\Stripe;
-use Stripe\Checkout\Session as CheckoutSession;
+use Illuminate\Support\Facades\DB;
+use App\Models\Order;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    // Create Stripe Checkout session from current cart
-    public function create(Request $request)
+    // ✅ 注文確認ページ
+    public function index()
     {
-        $sessionId = $request->session()->getId();
-        $cart = Cart::where('session_id', $sessionId)->with('items.product')->first();
-        if (!$cart || $cart->items->isEmpty()) {
-            return response()->json(['error' => 'カートが空です'], 400);
+        $cart = session('cart', []);
+        return view('checkout.index', compact('cart'));
+    }
+
+    // ✅ 注文確定処理（Stripeは未使用）
+    public function start(Request $request)
+    {
+        $cart = session('cart', []);
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'カートが空です');
         }
 
-        // Check stock for all items and create reservations
-        $reservations = [];
-        foreach ($cart->items as $item) {
-            /** @var Product $product */
-            $product = $item->product;
-            if ($product->stock < $item->quantity) {
-                return response()->json(['error' => "在庫不足: {$product->name}"], 400);
-            }
-        }
+        // 合計金額計算
+        $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-        // Create reservations (transaction not strictly necessary but safer)
-        foreach ($cart->items as $item) {
-            $res = InventoryReservation::create([
-                'product_id' => $item->product->id,
-                'session_id' => $sessionId,
-                'quantity' => $item->quantity,
-                'expires_at' => Carbon::now()->addMinutes(15),
-                'status' => 'reserved',
+        DB::beginTransaction();
+        try {
+            // 注文番号自動生成
+            $orderNumber = 'ORDER-' . now()->format('YmdHis') . '-' . Str::random(4);
+
+            // 注文を保存
+            $order = Order::create([
+                'order_number'    => $orderNumber,
+                'customer_name'   => $request->name,
+                'customer_email'  => $request->email,
+                'shipping_address'=> $request->address,
+                'status'          => 'pending',
+                'total_amount'    => $total,
             ]);
-            $reservations[] = $res->id;
+
+            DB::commit();
+
+            // カートをクリア
+            session()->forget('cart');
+
+            return redirect()->route('checkout.success')->with('success', '注文が確定しました！');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('checkout.cancel')->with('error', '注文処理に失敗しました: ' . $e->getMessage());
         }
-
-        Stripe::setApiKey(config('services.stripe.secret'));
-
-        $line_items = [];
-        foreach ($cart->items as $item) {
-            $line_items[] = [
-                'price_data' => [
-                    'currency' => 'jpy',
-                    'product_data' => [
-                        'name' => $item->product->name,
-                    ],
-                    'unit_amount' => $item->product->price,
-                ],
-                'quantity' => $item->quantity,
-            ];
-        }
-
-        // Stripe metadata: reservation ids joined by comma
-        $metadata = [
-            'reservation_ids' => implode(',', $reservations),
-            'session_id' => $sessionId,
-        ];
-
-        $session = CheckoutSession::create([
-            'payment_method_types' => ['card'],
-            'line_items' => $line_items,
-            'mode' => 'payment',
-            'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('checkout.cancel'),
-            'metadata' => $metadata,
-        ]);
-
-        // Save session id into reservations
-        InventoryReservation::whereIn('id', $reservations)->update(['session_id' => $session->id]);
-
-        return response()->json(['id' => $session->id, 'url' => $session->url]);
     }
 
-    public function success(Request $request)
+    // ✅ 成功ページ
+    public function success()
     {
-        return view('checkout.success', ['session_id' => $request->query('session_id')]);
+        return '<h2>ご注文ありがとうございました！</h2>';
     }
 
-    public function cancel(Request $request)
+    // ✅ キャンセルページ
+    public function cancel()
     {
-        // Optionally release reservations associated with this session immediately
-        return view('checkout.cancel');
+        return '<h2>お支払いがキャンセルされました</h2>';
     }
 }

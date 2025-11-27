@@ -1,11 +1,8 @@
-@extends('layouts.app')
-
-@section('title', '購入キャンセル')
-
-@section('content')
-<div class="text-center">
-  <h1>購入がキャンセルされました</h1>
-  <p>支払いを中止しました。必要に応じて再度カートから購入してください。</p>
-  <a class="btn btn-primary" href="{{ route('cart.index') }}">カートを見る</a>
-</div>
-@endsection
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"><title>支払いキャンセル</title></head>
+<body>
+<h1>お支払いがキャンセルされました</h1>
+<p>{{ $message ?? '' }}</p>
+</body>
+</html>

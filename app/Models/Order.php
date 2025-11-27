@@ -10,23 +10,40 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'status', 'total_amount',
-        'payment_method', 'paid_at', 'shipped_at',
-        'refunded_at', 'memo',
+        'order_number',
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'shipping_address',
+        'subtotal',
+        'shipping_fee',
+        'total_amount',
+        'status',
+        'tracking_number',
+        'shipped_at',
+        'payment_method',
+        'payment_status',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    protected $casts = [
+        'shipped_at' => 'datetime',
+    ];
 
+    // 関連（注文→注文商品）
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function payments()
+    // ステータスの日本語表示
+    public function getStatusLabelAttribute(): string
     {
-        return $this->hasMany(Payment::class);
+        return match ($this->status) {
+            'pending' => '入金待ち',
+            'paid' => '入金確認',
+            'shipped' => '発送済み',
+            'refunded' => '返金済み',
+            default => '不明',
+        };
     }
 }

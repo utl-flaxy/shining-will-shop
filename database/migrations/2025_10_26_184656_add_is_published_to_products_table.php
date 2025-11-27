@@ -4,16 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // SKU（商品コード）を追加
-            // nullable にしておく（既存データとの整合のため）
-            // unique 制約も付ける
-            if (!Schema::hasColumn('products', 'sku')) {
-                $table->string('sku')->nullable()->unique()->after('description');
+            if (!Schema::hasColumn('products', 'is_published')) {
+                $table->boolean('is_published')->default(true)->after('images');
             }
         });
     }
@@ -21,9 +17,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            if (Schema::hasColumn('products', 'sku')) {
-                $table->dropUnique(['sku']);
-                $table->dropColumn('sku');
+            if (Schema::hasColumn('products', 'is_published')) {
+                $table->dropColumn('is_published');
             }
         });
     }

@@ -5,19 +5,24 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_variant_id')->nullable()->constrained()->nullOnDelete();
             $table->string('product_name');
-            $table->integer('price');   // 単価（円）
-            $table->integer('quantity');
-            $table->json('options')->nullable();
+            $table->string('member_name')->nullable();
+            $table->integer('unit_price');
+            $table->unsignedInteger('qty');
+            $table->integer('subtotal');
             $table->timestamps();
         });
     }
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::dropIfExists('order_items');
     }
 };

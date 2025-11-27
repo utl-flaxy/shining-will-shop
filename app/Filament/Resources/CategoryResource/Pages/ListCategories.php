@@ -16,4 +16,12 @@ class ListCategories extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    /**
+     * 一覧の説明文（任意）
+     */
+    public function getSubheading(): ?string
+    {
+        return '登録されているカテゴリーの一覧です。';
+    }
 }

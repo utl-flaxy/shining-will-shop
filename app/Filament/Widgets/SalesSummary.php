@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class SalesSummary extends Widget
 {
-    protected string $view = 'filament.widgets.sales-summary';
+    protected static string $view = 'filament.widgets.sales-summary';
     protected array|string|int $columnSpan = 2;
 
     public function getData(): array

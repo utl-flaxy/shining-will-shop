@@ -1,39 +1,62 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\StripeWebhookController;
-use App\Http\Controllers\StripePaymentController; // 追加 (実装済みを想定)
-use App\Http\Controllers\Front\ProductController as FrontProductController;
-use App\Http\Controllers\Front\CartController as FrontCartController;
-use App\Http\Controllers\Front\CheckoutController as FrontCheckoutController;
-use Illuminate\Http\Request;
-use App\Models\Product;
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\Owner\AuthController as OwnerAuthController;
+use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
+use App\Http\Controllers\Owner\ProductController as OwnerProductController;
+use App\Http\Controllers\Owner\OrderController as OwnerOrderController;
 
-// Front-end Product Routes (with search/filter)
-Route::get('/', [FrontProductController::class, 'index'])->name('store.index');
-Route::get('/products', [FrontProductController::class, 'index'])->name('products.index');
-Route::get('/products/{product}', [FrontProductController::class, 'show'])->name('store.product');
+// ---------------------------------------------------
+// 🏠 ストア（トップ・商品一覧・詳細）
+// ---------------------------------------------------
+Route::get('/', [StoreController::class, 'index'])->name('store.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-// Front-end Cart Routes
-Route::get('/cart', [FrontCartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [FrontCartController::class, 'add'])->name('cart.add');
-Route::post('/cart/update', [FrontCartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [FrontCartController::class, 'remove'])->name('cart.remove');
+// ---------------------------------------------------
+// 🏷 カテゴリ別表示
+// ---------------------------------------------------
+Route::get('/categories/{id}', [StoreController::class, 'category'])->name('store.categories');
 
-// Front-end Checkout Routes (require authentication)
-Route::middleware('auth')->group(function () {
-    Route::post('/checkout/start', [FrontCheckoutController::class, 'start'])->name('checkout.start');
-    Route::get('/checkout/success', [FrontCheckoutController::class, 'success'])->name('checkout.success');
+// ---------------------------------------------------
+// 🛒 カート機能
+// ---------------------------------------------------
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+
+// ---------------------------------------------------
+// 💳 チェックアウト（ゲスト購入対応）
+// ---------------------------------------------------
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout/start', [CheckoutController::class, 'start'])->name('checkout.start');
+Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+
+// ---------------------------------------------------
+// 🔐 /owner 管理画面（自作）
+// ---------------------------------------------------
+Route::prefix('owner')->name('owner.')->group(function () {
+    // 🔓 ログイン・ログアウト
+    Route::get('/login', [OwnerAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [OwnerAuthController::class, 'login'])->name('login.post');
+    Route::post('/logout', [OwnerAuthController::class, 'logout'])->name('logout');
+
+    // 💡 ログイン必須
+    Route::middleware('owner.auth')->group(function () {
+        Route::get('/', [OwnerDashboardController::class, 'index'])->name('dashboard');
+
+        // 商品管理
+        Route::get('/products', [OwnerProductController::class, 'index'])->name('products.index');
+        Route::get('/products/{product}/edit', [OwnerProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [OwnerProductController::class, 'update'])->name('products.update');
+
+        // 注文管理
+        Route::get('/orders', [OwnerOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [OwnerOrderController::class, 'show'])->name('orders.show');
+    });
 });
-Route::get('/checkout/cancel', [FrontCheckoutController::class, 'cancel'])->name('checkout.cancel');
-
-// Stripe webhook
-Route::post('/stripe/webhook', [\App\Http\Controllers\Webhook\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
-
-// Unthrottled webhook for local development
-if (env("ENABLE_LOCAL_WEBHOOK_UNTHROTTLED", false)) {
-    Route::post('stripe/webhook-unthrottled', [\App\Http\Controllers\Webhook\StripeWebhookController::class, 'handle'])
-        ->withoutMiddleware('throttle:api');
-}

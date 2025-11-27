@@ -2,67 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\Product;
 
 class CartController extends Controller
 {
-    // get or create cart by session_id (frontend should supply session id or use auth user)
-    protected function getCartBySession(Request $request)
+    // カート一覧
+    public function index()
     {
-        $sessionId = $request->session()->getId();
-        $cart = Cart::firstOrCreate(['session_id' => $sessionId]);
-        return $cart;
+        $cart = session('cart', []);
+        $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        return view('shop.cart', compact('cart', 'total'));
     }
 
-    public function index(Request $request)
+    // カートに追加
+    public function add(Request $request, Product $product)
     {
-        $cart = $this->getCartBySession($request);
-        $cart->load('items.product');
-        return response()->json($cart);
-    }
+        $cart = session('cart', []);
 
-    public function add(Request $request)
-    {
-        $cart = $this->getCartBySession($request);
-        $product = Product::findOrFail($request->input('product_id'));
-        $quantity = max(1, (int)$request->input('quantity', 1));
-
-        $item = $cart->items()->where('product_id', $product->id)->first();
-        if ($item) {
-            $item->quantity += $quantity;
-            $item->save();
+        if (isset($cart[$product->id])) {
+            $cart[$product->id]['quantity']++;
         } else {
-            $cart->items()->create([
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-            ]);
+            $cart[$product->id] = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => 1,
+            ];
         }
 
-        return response()->json(['message' => 'added', 'cart' => $cart->load('items.product')]);
-    }
+        session(['cart' => $cart]);
 
-    public function update(Request $request, $itemId)
-    {
-        $cart = $this->getCartBySession($request);
-        $item = $cart->items()->findOrFail($itemId);
-        $quantity = max(0, (int)$request->input('quantity', 1));
-        if ($quantity === 0) {
-            $item->delete();
-            return response()->json(['message' => 'removed']);
-        }
-        $item->quantity = $quantity;
-        $item->save();
-        return response()->json(['message' => 'updated', 'item' => $item]);
-    }
-
-    public function remove(Request $request, $itemId)
-    {
-        $cart = $this->getCartBySession($request);
-        $item = $cart->items()->findOrFail($itemId);
-        $item->delete();
-        return response()->json(['message' => 'removed']);
+        return redirect()->route('cart.index')->with('success', '商品をカートに追加しました！');
     }
 }

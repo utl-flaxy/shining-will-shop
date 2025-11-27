@@ -2,73 +2,92 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $guarded = [];
-    protected $casts = [
-        'images' => 'array',
-        'is_active' => 'boolean',
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'sku',
+        'price',
+        'description',
+        'is_published',
+        'category_id',
+        'starts_at',
+        'ends_at',
+        'manage_stock',
     ];
 
-    /**
-     * Relationship: Product belongs to Category
-     */
+    protected $casts = [
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+        'is_published' => 'boolean',
+        'manage_stock' => 'boolean',
+    ];
+
+    // ==============================
+    // 🔗 リレーション
+    // ==============================
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Scope: Search by keyword (name or description)
-     */
-    public function scopeSearch(Builder $query, ?string $keyword): Builder
+    public function variants(): HasMany
     {
-        if (empty($keyword)) {
-            return $query;
-        }
-
-        return $query->where(function ($q) use ($keyword) {
-            $q->where('name', 'like', "%{$keyword}%")
-              ->orWhere('description', 'like', "%{$keyword}%");
-        });
+        return $this->hasMany(ProductVariant::class);
     }
 
-    /**
-     * Scope: Filter by category
-     */
-    public function scopeByCategory(Builder $query, $categoryId): Builder
+    public function images(): HasMany
     {
-        if (empty($categoryId)) {
-            return $query;
-        }
-
-        return $query->where('category_id', $categoryId);
+        return $this->hasMany(ProductImage::class)->orderBy('sort');
     }
 
-    /**
-     * Scope: Filter by price range
-     */
-    public function scopePriceRange(Builder $query, ?int $minPrice, ?int $maxPrice): Builder
+    public function orderItems(): HasMany
     {
-        if ($minPrice !== null && $minPrice >= 0) {
-            $query->where('price', '>=', $minPrice);
-        }
-
-        if ($maxPrice !== null && $maxPrice >= 0) {
-            $query->where('price', '<=', $maxPrice);
-        }
-
-        return $query;
+        return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Scope: Only active products
-     */
-    public function scopeActive(Builder $query): Builder
+    // ==============================
+    // 📦 スコープ
+    // ==============================
+    public function scopePublished($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_published', true);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query
+            ->where(function ($q) {
+                $q->whereNull('starts_at')
+                  ->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('ends_at')
+                  ->orWhere('ends_at', '>=', now());
+            });
+    }
+
+    // ==============================
+    // ⚙️ 補助メソッド
+    // ==============================
+    public function isAvailableForSale(): bool
+    {
+        if (!$this->is_published) return false;
+        if ($this->starts_at && $this->starts_at->isFuture()) return false;
+        if ($this->ends_at && $this->ends_at->isPast()) return false;
+        return true;
+    }
+
+    public function totalStock(): int
+    {
+        return $this->manage_stock
+            ? $this->variants->sum('stock')
+            : 9999; // 在庫管理しない場合は無制限扱い
     }
 }

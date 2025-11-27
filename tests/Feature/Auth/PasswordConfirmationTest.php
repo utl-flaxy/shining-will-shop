@@ -2,29 +2,43 @@
 
 namespace Tests\Feature\Auth;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function user_can_confirm_password_when_required()
+    public function test_confirm_password_screen_can_be_rendered(): void
     {
-        $password = 'confirm-pass-123';
-        $user = User::factory()->create([
-            'password' => bcrypt($password),
-        ]);
+        $user = User::factory()->create();
 
-        $this->actingAs($user);
+        $response = $this->actingAs($user)->get('/confirm-password');
 
-        $response = $this->postJson(route('password.confirm'), [
-            'password' => $password,
-        ]);
-
-        // 200 / 204 等に合わせて調整
         $response->assertStatus(200);
+    }
+
+    public function test_password_can_be_confirmed(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/confirm-password', [
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+    }
+
+    public function test_password_is_not_confirmed_with_invalid_password(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/confirm-password', [
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertSessionHasErrors();
     }
 }
