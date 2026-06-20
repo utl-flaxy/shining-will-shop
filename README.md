@@ -1,112 +1,92 @@
-# 🛍️ Shining Will Shop
+🛍️ Shining Will Shop
 
-Laravel + Filament を用いて開発した ECサイトシステムです。
+Laravel + Filament を用いて開発した、アイドルグッズ販売向けECサイトです。
 
-商品状態、販売期間、在庫状態を組み合わせた業務ロジックを実装し、管理画面を含めて構築しました。
+単なるCRUDアプリではなく、
 
-単なる CRUD アプリではなく、
+商品状態管理
+販売期間管理
+在庫管理
+管理画面
+業務ロジック設計
 
-* 商品状態管理
-* 販売期間制御
-* 在庫管理
-* ドメインロジック設計
-* 管理画面構築
+を重視し、実運用を意識した設計を行いました。
 
-など、実務を意識した設計を行っています。
-
----
-
-# 🎯 開発背景
+📌 このプロジェクトで証明できること
+Laravelを用いたバックエンド開発
+業務ロジックを考慮したドメイン設計
+Filamentによる管理画面構築
+Modelへの責務集約
+状態 × 時間 × 在庫を組み合わせた販売制御
+Dockerを利用した開発環境構築
+VPS上でのサーバー構築・公開
+Linux / Nginx / MySQL を用いた運用
+🎯 開発背景
 
 ECサイトでは、
 
-* 販売開始前の商品を表示したい
-* 販売期間を制御したい
-* 在庫切れ時に購入不可にしたい
-* 商品状態と販売状態を管理したい
+販売前の商品を表示したい
+販売期間を自動制御したい
+在庫切れ時に購入できなくしたい
+商品状態と販売状態を分離したい
 
-など、複数の条件を考慮した業務ロジックが必要になります。
+など、単純なCRUDだけでは対応できない業務要件があります。
 
 本プロジェクトでは、
 
-「商品状態 × 販売期間 × 在庫状態」
+「商品状態 × 販売期間 × 在庫」
 
-を組み合わせたシステムを設計・実装しました。
+を組み合わせた業務ロジックを設計し、実際のECサイトを意識したシステムを構築しました。
 
----
+🏗 システム構成
+Internet
+    ↓
+Nginx
+    ↓
+Laravel 11
+    ↓
+MySQL
+🛠 技術スタック
+分類	技術
+Language	PHP 8.3
+Framework	Laravel 11
+Admin	Filament v3
+Frontend	Blade / TailwindCSS
+Database	MySQL 8
+Web Server	Nginx
+OS	Ubuntu
+Container	Docker
+Version Control	Git / GitHub
+Server	ConoHa VPS
+⭐ 主な機能
+商品管理
+商品登録
+商品編集
+商品削除
+商品画像管理
+カテゴリ管理
+在庫管理
+バリアント単位在庫管理
+合計在庫自動計算
+SOLD OUT判定
+販売管理
+掲載開始日時
+販売開始日時
+販売終了日時
+商品状態管理
+購入可否判定
+管理画面
 
-# 🛠 技術スタック
+Filamentによる管理画面を実装
 
-## Backend
-
-* PHP 8.3
-* Laravel 11
-
-## Admin
-
-* Filament v3
-
-## Frontend
-
-* Blade
-* TailwindCSS
-
-## Database
-
-* MySQL
-
-## Infrastructure
-
-* Ubuntu
-* Nginx
-* Docker
-* ConoHa VPS
-
-## Version Control
-
-* Git
-* GitHub
-
----
-
-# ⭐ 主な機能
-
-## 商品管理
-
-* 商品CRUD
-* SKU管理
-* カテゴリ管理
-* 商品画像管理
-
-## 在庫管理
-
-* バリアント単位在庫管理
-* 在庫合計自動計算
-* SOLD OUT判定
-
-## 販売管理
-
-* 掲載開始日時管理
-* 販売開始日時管理
-* 販売終了日時管理
-* 商品状態管理
-
-## 管理画面
-
-* Filamentによる管理画面
-* 商品管理
-* 在庫管理
-* カテゴリ管理
-
----
-
-# 🧠 コア設計
-
-## 商品状態
+商品管理
+在庫管理
+カテゴリ管理
+🧠 コア設計
+商品状態管理
 
 商品は以下の状態を持ちます。
 
-```text
 掲載前
 ↓
 販売前
@@ -114,36 +94,31 @@ ECサイトでは、
 販売中
 ↓
 販売終了
-```
 
-状態に応じて、
+状態に応じて
 
-* 表示可否
-* 購入可否
+表示可否
+購入可否
 
 を制御しています。
 
----
+購入可能判定
 
-## 購入可能判定
+以下の条件を全て満たした場合のみ購入可能です。
 
-```text
-表示中
+公開中
 ↓
-販売ON
+販売中
 ↓
 販売期間内
 ↓
 在庫あり
 
 ＝購入可能
-```
 
-複数条件を統合し、業務要件をコードで表現しています。
+複数条件を組み合わせることで業務要件を実現しています。
 
----
-
-## 在庫管理
+在庫管理
 
 商品単位ではなく、
 
@@ -151,265 +126,165 @@ ECサイトでは、
 
 で在庫を管理しています。
 
-合計在庫は動的に集計しています。
-
-```php
 public function totalStock(): int
 {
     return (int)$this->variants()->sum('stock');
 }
-```
 
----
+必要な時だけ動的に合計在庫を算出します。
 
-## 販売期間制御
+販売期間制御
+publish_start_at → 掲載開始
 
-```text
-publish_start_at
+sale_start_at → 販売開始
 
-掲載開始
+sale_end_at → 販売終了
 
-sale_start_at
+時間を軸にシステムの振る舞いを制御しています。
 
-販売開始
+📊 ER図
+👨‍💻 工夫したポイント
+① 状態 × 時間 × 在庫の統合
 
-sale_end_at
+以下を組み合わせて購入可否を制御しています。
 
-販売終了
-```
+商品状態
+販売期間
+在庫状態
 
-時間を軸にシステムの挙動を制御しています。
+単純なCRUDではなく、
 
----
+「条件によってシステムの振る舞いを変える」
 
-# 📊 ER図
+設計を意識しました。
 
-```mermaid
-erDiagram
+② ドメインロジックをModelに集約
 
-categories ||--o{ products : has
-products ||--o{ product_images : has
-products ||--o{ product_variants : has
+Modelへ業務ロジックを集約しています。
 
-categories {
-    bigint id
-    string name
-}
+isAvailableForSale()
 
-products {
-    bigint id
-    bigint category_id
-    string name
-    int price
-    boolean is_published
-    boolean is_active
-    datetime publish_start_at
-    datetime sale_start_at
-    datetime sale_end_at
-}
+isSoldOut()
 
-product_images {
-    bigint id
-    bigint product_id
-    string image_path
-}
+saleStatusLabel()
 
-product_variants {
-    bigint id
-    bigint product_id
-    string member_name
-    int stock
-}
-```
+Controllerにロジックを書かず、
 
----
+保守性・再利用性を意識した設計を行いました。
 
-# 🖼 システム構成
+③ Filamentによる管理画面構築
 
-```text
-Internet
-    ↓
-Nginx
-    ↓
-Laravel
-    ↓
-MySQL
-```
+管理者向けUIとして Filament を採用しました。
 
----
+実装した機能
 
-# 👨‍💻 工夫したポイント
+商品管理
+カテゴリ管理
+在庫管理
 
-## ① 商品状態 × 販売期間 × 在庫状態の統合
+管理コスト削減と保守性向上を実現しています。
 
-以下を組み合わせて購入可否を判定しています。
+④ 責務分離
 
-* 商品状態
-* 販売期間
-* 在庫状態
+以下の責務を意識して実装しました。
 
-業務ロジックをモデルに集約することで保守性を高めています。
+Controller
+↓
+Service
+↓
+Model
+↓
+Repository
 
----
+処理を分離することで、
 
-## ② ドメインロジックを Model に集約
+保守性
+拡張性
+テスト容易性
 
-Model に
+を意識した構成にしています。
 
-* isAvailableForSale()
-* isSoldOut()
-* saleStatusLabel()
+🚀 サーバー構築
 
-などを実装し、
+個人で VPS を契約し、
 
-業務知識をコードで表現しています。
+Linuxサーバー上で公開環境を構築しました。
 
----
-
-## ③ Filament による管理画面構築
-
-管理者が直感的に操作できるよう、
-
-* 商品管理
-* カテゴリ管理
-* 在庫管理
-
-を GUI で行えるようにしました。
-
----
-
-## ④ 責務分離を意識した設計
-
-* Controller
-* Service
-* Model
-* View
-
-の責務を分離し、
-
-保守性や拡張性を意識した構成としています。
-
----
-
-# 🚀 サーバー構築
-
-ConoHa VPS 上に公開環境を構築しました。
-
-構成
-
-```text
+サーバー構成
 Ubuntu
 Nginx
 PHP8.3
-MySQL
+MySQL8
 Docker
-```
+サーバースペック
+CPU 2 Core
 
-担当内容
-
-* Docker環境構築
-* Nginx設定
-* Laravelデプロイ
-* ドメイン設定
-* HTTPS化
-* 公開環境構築
-
-企画からサーバー公開まで一人で担当しました。
-
----
-
-# 📁 ディレクトリ構成
-
-```text
-app
- ├ Models
- ├ Services
- ├ Http
- │   ├ Controllers
- │   └ Requests
- └ Providers
-
-resources
- ├ views
- ├ components
- └ layouts
-
-routes
- ├ web.php
- └ admin.php
-```
-
----
-
-# 🚧 現在の実装状況
-
-| 機能     | 状態 |
-| ------ | -- |
-| 商品管理   | ✅  |
-| カテゴリ管理 | ✅  |
-| 在庫管理   | ✅  |
-| 販売期間管理 | ✅  |
-| 商品状態管理 | ✅  |
-| 管理画面   | ✅  |
-| カート機能  | 🚧 |
-| 注文管理   | 🚧 |
-| 決済機能   | 🚧 |
-
----
-
-# 🚀 今後の改善
-
-* カート機能
-
-* 注文管理
-
-* Stripe決済
-
-* 会員制システム連携
-
-* AWS構成
-
-  * S3
-  * CloudFront
-  * RDS
-
-* GitHub ActionsによるCI/CD
-
-* 自動テスト追加
-
----
-
-# 🔗 GitHub
-
-```text
-https://github.com/xxxx/shining-will-shop
-```
-
----
-
-# 📝 まとめ
+Memory 1GB
+🚧 現在の実装状況
+機能	状態
+商品管理	✅
+カテゴリ管理	✅
+商品画像管理	✅
+在庫管理	✅
+販売期間管理	✅
+商品状態管理	✅
+管理画面	✅
+カート機能	🚧
+注文管理	🚧
+決済機能	🚧
+🔥 今後追加予定
+カート機能
+注文管理
+Stripe決済
+購入履歴
+FanClub会員連携
+AWS移行
+S3画像保存
+CloudFront導入
+RDS導入
+📂 開発環境
+Clone
+git clone https://github.com/utl-flaxy/shining-will-shop
+起動
+docker compose up -d
+composer install
+docker compose exec app composer install
+.env作成
+cp .env.example .env
+APP_KEY生成
+php artisan key:generate
+Migration
+php artisan migrate
+Storage Link
+php artisan storage:link
+🔗 GitHub
+https://github.com/utl-flaxy/shining-will-shop
+📝 まとめ
 
 本プロジェクトでは、
 
-* 商品状態
-* 販売期間
-* 在庫状態
+商品状態
+販売期間
+在庫管理
 
 を組み合わせた業務ロジックを実装しました。
 
-単なる CRUD アプリではなく、
+単なるCRUDアプリではなく、
 
-「条件に応じてシステムの振る舞いを制御する設計」
+「状態 × 時間 × データ」によってシステムの振る舞いを制御する設計
 
-を意識し、保守性・拡張性を考慮した実務志向の EC システムとして開発しました。
+を意識して開発しています。
 
-また、アプリケーション開発だけでなく、
+また、
 
-* サーバー構築
-* Docker環境構築
-* Nginx設定
-* ドメイン設定
-* HTTPS化
-* 公開環境構築
+Laravel
+Filament
+Docker
+Linux
+Nginx
+MySQL
+VPS公開
 
-まで一貫して担当しました。
+まで一貫して担当し、開発から運用までを経験しました。
+
+🙏 ご覧いただきありがとうございました。
