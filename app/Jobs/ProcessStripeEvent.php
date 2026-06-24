@@ -8,6 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ProcessStripeEvent implements ShouldQueue
 {
@@ -38,15 +39,31 @@ class ProcessStripeEvent implements ShouldQueue
                     Log::info('Job: Handle invoice.paid', ['stripe_event_id' => $id]);
                     break;
 
+                case 'payment_intent.created':
+                    Log::info('Job: Handle payment_intent.created', ['stripe_event_id' => $id]);
+                    break;
+
+                case 'payment_intent.succeeded':
+                    Log::info('Job: Handle payment_intent.succeeded', ['stripe_event_id' => $id]);
+                    break;
+
+                case 'charge.succeeded':
+                    Log::info('Job: Handle charge.succeeded', ['stripe_event_id' => $id]);
+                    break;
+
+                case 'charge.updated':
+                    Log::info('Job: Handle charge.updated', ['stripe_event_id' => $id]);
+                    break;
+
                 default:
                     Log::info('Job: Unhandled Stripe event', ['type' => $type, 'stripe_event_id' => $id]);
             }
 
-            // 成功時に processed_at を更新
             if ($id) {
-                DB::table('stripe_events')->where('stripe_event_id', $id)->update([
-                    'processed_at' => now(),
-                    'updated_at' => now(),
+                DB::table('processed_stripe_events')->where('event_id', $id)->update([
+                    'status' => 'processed',
+                    'processed_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
                 ]);
             }
         } catch (\Exception $e) {
