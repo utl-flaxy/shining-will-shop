@@ -5,12 +5,13 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/css/app.css',
+                'resources/css/app.css', // ✅ これだけでOK
                 'resources/js/app.js',
             ],
-            refresh: true, // ✅ ファイル変更時に自動リロード
+            refresh: true,
         }),
     ],
+
     server: {
         host: '127.0.0.1',
         port: 5173,

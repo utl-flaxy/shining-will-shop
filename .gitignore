@@ -23,3 +23,29 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 docker/nginx/ssl/
+# Windows
+*Zone.Identifier
+
+# Backup
+*.bak
+*.backup
+*.old
+
+# Temporary
+tmp/
+_backup/
+backup_before_name_to_title/
+
+# SSL
+ssl/
+*.pem
+*.key
+
+# Archives
+*.zip
+
+# Logs
+logs/
+
+# SQLite
+database/*.sqlite

@@ -32,8 +32,7 @@ class FilamentServiceProvider extends PanelProvider
             ])
             // ->widgets([
             //     Widgets\AccountWidget::class,
-            // ])
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            // ]) b
             ->darkMode(false);
     }
 

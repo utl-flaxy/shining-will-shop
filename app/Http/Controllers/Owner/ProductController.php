@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -14,7 +15,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->get();
+        // カテゴリも一緒に取得（一覧表示用）
+        $products = Product::with('category')
+            ->latest()
+            ->get();
 
         return view('owner.products.index', compact('products'));
     }
@@ -24,7 +28,10 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('owner.products.create');
+        // ✅ カテゴリ一覧を取得（create.blade.php 用）
+        $categories = Category::orderBy('name')->get();
+
+        return view('owner.products.create', compact('categories'));
     }
 
     /**
@@ -38,6 +45,7 @@ class ProductController extends Controller
             'stock'       => 'required|integer|min:0',
             'description' => 'nullable|string',
             'is_active'   => 'required|boolean',
+            'category_id' => 'nullable|exists:categories,id',
             'image'       => 'nullable|image|max:4096', // 4MB
         ]);
 
@@ -50,26 +58,31 @@ class ProductController extends Controller
         }
 
         Product::create([
-            'name'        => $request->name,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'description' => $request->description,
-            'is_active'   => $request->is_active,
-            'image'       => $imageName,
+            'name'         => $request->name,
+            'price'        => $request->price,
+            'stock'        => $request->stock,
+            'description'  => $request->description,
+            'is_active'    => $request->is_active,
+            'category_id'  => $request->category_id,
+            'image'        => $imageName,
         ]);
 
-        return redirect()->route('owner.products.index')
+        return redirect()
+            ->route('owner.products.index')
             ->with('status', '商品を追加しました！');
     }
 
     /**
-     * 編集フォーム
+     * 編集フォーム（A-13）
      */
     public function edit($id)
     {
         $product = Product::findOrFail($id);
 
-        return view('owner.products.edit', compact('product'));
+        // ✅ カテゴリ一覧（edit.blade.php 用）
+        $categories = Category::orderBy('name')->get();
+
+        return view('owner.products.edit', compact('product', 'categories'));
     }
 
     /**
@@ -83,6 +96,7 @@ class ProductController extends Controller
             'stock'       => 'required|integer|min:0',
             'description' => 'nullable|string',
             'is_active'   => 'required|boolean',
+            'category_id' => 'nullable|exists:categories,id',
             'image'       => 'nullable|image|max:4096',
         ]);
 
@@ -92,6 +106,7 @@ class ProductController extends Controller
 
         // 新しい画像がアップされた場合
         if ($request->hasFile('image')) {
+
             // 古い画像削除
             if ($imageName && Storage::exists('public/products/' . $imageName)) {
                 Storage::delete('public/products/' . $imageName);
@@ -102,15 +117,17 @@ class ProductController extends Controller
         }
 
         $product->update([
-            'name'        => $request->name,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'description' => $request->description,
-            'is_active'   => $request->is_active,
-            'image'       => $imageName,
+            'name'         => $request->name,
+            'price'        => $request->price,
+            'stock'        => $request->stock,
+            'description'  => $request->description,
+            'is_active'    => $request->is_active,
+            'category_id'  => $request->category_id,
+            'image'        => $imageName,
         ]);
 
-        return redirect()->route('owner.products.index')
+        return redirect()
+            ->route('owner.products.index')
             ->with('status', '商品情報を更新しました！');
     }
 
@@ -128,7 +145,8 @@ class ProductController extends Controller
 
         $product->delete();
 
-        return redirect()->route('owner.products.index')
+        return redirect()
+            ->route('owner.products.index')
             ->with('status', '商品を削除しました！');
     }
 }

@@ -4,19 +4,21 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class Authenticate
 {
     public function handle(Request $request, Closure $next, ...$guards)
     {
-        // Development-friendly: if auth isn't configured, allow through.
-        if (! function_exists('auth') || auth()->guest()) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthenticated.'], 401);
-            }
-            return redirect()->guest('/login');
+        if (Auth::check()) {
+            return $next($request);
         }
 
-        return $next($request);
+        // ✅ ownerルートだけ専用ログインへ
+        if ($request->is('owner*')) {
+            return redirect()->route('owner.login');
+        }
+
+        return redirect('/login');
     }
 }

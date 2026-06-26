@@ -2,92 +2,71 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'name',
-        'sku',
-        'price',
-        'description',
-        'is_published',
         'category_id',
-        'starts_at',
-        'ends_at',
-        'manage_stock',
+        'name',
+        'description',
+        'price',
+        'stock',
+        'sku',
+        'is_published',
+        'is_active',
+        // マイグレーションに合わせる
+        'is_stock_managed',
     ];
 
-    protected $casts = [
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-        'is_published' => 'boolean',
-        'manage_stock' => 'boolean',
-    ];
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
 
-    // ==============================
-    // 🔗 リレーション
-    // ==============================
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function variants(): HasMany
+    public function variants()
     {
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function images(): HasMany
+    public function isSoldOut()
     {
-        return $this->hasMany(ProductImage::class)->orderBy('sort');
+        return $this->totalStock() <= 0;
     }
 
-    public function orderItems(): HasMany
+    public function totalStock()
     {
-        return $this->hasMany(OrderItem::class);
+        // migration のカラム名に合わせて判定
+        if (! $this->is_stock_managed) {
+            return 9999;
+        }
+
+        if ($this->variants()->count() > 0) {
+            return $this->variants()->sum('stock');
+        }
+
+        return $this->stock;
     }
 
-    // ==============================
-    // 📦 スコープ
-    // ==============================
-    public function scopePublished($query)
-    {
-        return $query->where('is_published', true);
-    }
-
-    public function scopeActive($query)
-    {
-        return $query
-            ->where(function ($q) {
-                $q->whereNull('starts_at')
-                  ->orWhere('starts_at', '<=', now());
-            })
-            ->where(function ($q) {
-                $q->whereNull('ends_at')
-                  ->orWhere('ends_at', '>=', now());
-            });
-    }
-
-    // ==============================
-    // ⚙️ 補助メソッド
-    // ==============================
     public function isAvailableForSale(): bool
     {
-        if (!$this->is_published) return false;
-        if ($this->starts_at && $this->starts_at->isFuture()) return false;
-        if ($this->ends_at && $this->ends_at->isPast()) return false;
-        return true;
-    }
+        if (isset($this->is_active) && ! $this->is_active) {
+            return false;
+        }
 
-    public function totalStock(): int
-    {
-        return $this->manage_stock
-            ? $this->variants->sum('stock')
-            : 9999; // 在庫管理しない場合は無制限扱い
+        if (isset($this->is_published) && ! $this->is_published) {
+            return false;
+        }
+
+        if ($this->is_stock_managed && $this->isSoldOut()) {
+            return false;
+        }
+
+        return true;
     }
 }

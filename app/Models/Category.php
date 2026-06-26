@@ -9,9 +9,18 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description'];
+    protected $fillable = [
+        'name',
+        'description',
+        'image',
+        'is_active',
+        'sort_order',
+    ];
 
-    // Productとのリレーション
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     public function products()
     {
         return $this->hasMany(Product::class);

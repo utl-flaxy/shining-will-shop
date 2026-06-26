@@ -2,99 +2,45 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Defaults
-    |--------------------------------------------------------------------------
-    |
-    | デフォルトの認証ガードとパスワードリセットブローカー。
-    | 通常は "web" をそのまま使いますが、Filament用に独自ガードも追加します。
-    |
-    */
-
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => 'web',
+        'passwords' => 'users',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Guards
-    |--------------------------------------------------------------------------
-    |
-    | ここにすべての認証ガードを定義します。
-    | "web" は通常のサイト用、"filament" は管理画面専用。
-    |
-    | サポート: "session"
-    |
-    */
-
     'guards' => [
-        // 通常ユーザー用（ストアなど）
+
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
 
-        // ✅ Filament 管理画面専用ガード
-        'filament' => [
+        // ✅ オーナー専用ガード（これが無かった）
+        'owner' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'owners',
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | User Providers
-    |--------------------------------------------------------------------------
-    |
-    | 各ガードがどのユーザーデータを使うか定義します。
-    | 通常は Eloquent モデル `App\Models\User` を使用。
-    |
-    */
 
     'providers' => [
+
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\User::class,
         ],
 
-        // DB直アクセスする場合（非推奨）
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // ✅ オーナー用プロバイダ
+        'owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Owner::class,
+        ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Resetting Passwords
-    |--------------------------------------------------------------------------
-    |
-    | パスワードリセット機能の設定。
-    | トークンの有効期限やリセット用テーブル名をここで定義します。
-    |
-    */
 
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'table' => 'password_reset_tokens',
             'expire' => 60,
-            'throttle' => 60,
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Password Confirmation Timeout
-    |--------------------------------------------------------------------------
-    |
-    | パスワード再確認の有効時間（秒単位）。
-    | デフォルトは3時間 (10800秒)。
-    |
-    */
-
-    'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];

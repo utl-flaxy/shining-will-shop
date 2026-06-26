@@ -4,35 +4,71 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
-    // カート一覧
     public function index()
     {
-        $cart = session('cart', []);
-        $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-        return view('shop.cart', compact('cart', 'total'));
+        $cart = Session::get('cart', []);
+
+        $total = collect($cart)->sum(function ($item) {
+            return $item['price'] * $item['quantity'];
+        });
+
+        return view('cart.index', compact('cart', 'total'));
     }
 
-    // カートに追加
     public function add(Request $request, Product $product)
     {
-        $cart = session('cart', []);
+        $quantity = (int) $request->input('quantity', 1);
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity']++;
+        $cart = Session::get('cart', []);
+        $key = (string) $product->id;
+
+        if (isset($cart[$key])) {
+            $cart[$key]['quantity'] += $quantity;
         } else {
-            $cart[$product->id] = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'quantity' => 1,
+            $cart[$key] = [
+                'id'       => $product->id,
+                'name'     => $product->name,
+                'price'    => (int) $product->price,
+                'quantity' => $quantity,
             ];
         }
 
-        session(['cart' => $cart]);
+        Session::put('cart', $cart);
 
-        return redirect()->route('cart.index')->with('success', '商品をカートに追加しました！');
+        return redirect()->route('cart.index')->with('success', 'カートに追加しました');
+    }
+
+    public function update(Request $request)
+    {
+        $cart = Session::get('cart', []);
+
+        $key = $request->input('key');
+        $qty = max(1, (int) $request->input('quantity'));
+
+        if (isset($cart[$key])) {
+            $cart[$key]['quantity'] = $qty;
+        }
+
+        Session::put('cart', $cart);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function remove(Request $request)
+    {
+        $cart = Session::get('cart', []);
+        $key = $request->input('key');
+
+        if (isset($cart[$key])) {
+            unset($cart[$key]);
+        }
+
+        Session::put('cart', $cart);
+
+        return redirect()->route('cart.index')->with('success', '商品を削除しました');
     }
 }

@@ -20,9 +20,11 @@
             @forelse ($categories as $category)
                 <div class="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg transition">
                     {{-- 画像 --}}
-                    <img src="{{ $category->image ? asset('storage/' . $category->image) : asset('images/default-category.jpg') }}"
-                         alt="{{ $category->name }}"
-                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105">
+                    <img
+                        src="{{ $category->image ? asset('storage/' . $category->image) : asset('images/default-category.jpg') }}"
+                        alt="{{ $category->name }}"
+                        class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                    >
 
                     {{-- オーバーレイ --}}
                     <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-all duration-300"></div>
@@ -34,11 +36,13 @@
                         </h3>
                     </div>
 
-                    {{-- リンク（今はトップページリンク） --}}
-                    <a href="{{ route('store.index') }}" class="absolute inset-0"></a>
+                    {{-- ✅ カテゴリーページへのリンク --}}
+                    <a href="{{ route('store.categories', $category->id) }}" class="absolute inset-0"></a>
                 </div>
             @empty
-                <p class="col-span-3 text-center text-gray-500">カテゴリーがまだ登録されていません。</p>
+                <p class="col-span-3 text-center text-gray-500">
+                    カテゴリーがまだ登録されていません。
+                </p>
             @endforelse
         </div>
     </section>

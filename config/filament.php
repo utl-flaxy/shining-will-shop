@@ -4,10 +4,8 @@ use App\Filament\Pages\Login;
 use App\Filament\Resources\ProductResource;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\SaleResource;
-use App\Filament\Resources\OrderResource; // ← ✅ 注文管理を追加
+use App\Filament\Resources\OrderResource;
 use Filament\Pages;
-use Filament\Widgets;
-use Filament\Facades\Filament;
 
 return [
 
@@ -48,7 +46,7 @@ return [
                 ProductResource::class,
                 CategoryResource::class,
                 SaleResource::class,
-                OrderResource::class, // ✅ ここを追加
+                OrderResource::class,
             ],
 
             /*
@@ -81,7 +79,7 @@ return [
             ],
 
             'widgets' => [
-                // Widgets\AccountWidget::class, // ← 非表示（左メニューをシンプル化）
+                // Widgets\AccountWidget::class,
             ],
 
             /*
@@ -98,7 +96,7 @@ return [
             | 🎨 テーマ設定
             |--------------------------------------------------------------------------
             */
-            'viteTheme' => 'resources/css/filament/admin/theme.css',
+            'viteTheme' => 'null',
 
             'theme' => [
                 'path' => resource_path('css/filament/admin/theme.css'),
@@ -121,58 +119,10 @@ return [
 
             /*
             |--------------------------------------------------------------------------
-            | 🧩 UI設定（Filament::serving で追加カスタマイズ）
+            | 🧩 UI追加設定（※クロージャ完全禁止・true のみ）
             |--------------------------------------------------------------------------
             */
-            'serving' => function () {
-                Filament::registerRenderHook(
-                    'head.end',
-                    fn () => <<<HTML
-                    <style>
-                        /* ===== 🌈 Shining Will 管理画面 カスタムテーマ ===== */
-
-                        /* サイドバー */
-                        .fi-sidebar {
-                            background-color: #f8f9fa !important;
-                        }
-
-                        /* 上部バー */
-                        .fi-topbar {
-                            background-color: #ffffff !important;
-                            border-bottom: 1px solid #e0e0e0 !important;
-                        }
-
-                        /* プライマリボタン（青系） */
-                        .fi-btn-primary {
-                            background-color: #2196f3 !important;
-                            border-color: #2196f3 !important;
-                            color: white !important;
-                            border-radius: 4px !important;
-                            font-weight: 500 !important;
-                        }
-
-                        .fi-btn-primary:hover {
-                            background-color: #1976d2 !important;
-                        }
-
-                        /* テーブル背景 */
-                        .fi-ta-table {
-                            background-color: #ffffff !important;
-                        }
-
-                        /* 日本語フォント適用 */
-                        body {
-                            font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif !important;
-                        }
-
-                        /* リンクカラー */
-                        a {
-                            color: #1976d2 !important;
-                        }
-                    </style>
-                    HTML
-                );
-            },
+            'serving' => true,
         ],
     ],
 ];

@@ -10,9 +10,7 @@
 <body>
 <div class="owner-layout">
 
-    <!-- ============================
-          📌 サイドバー
-    ============================= -->
+    <!-- 📌 サイドバー -->
     <aside class="owner-sidebar">
         <div class="owner-logo">
             <span class="owner-logo-main">Shining Will Shop</span>
@@ -21,82 +19,51 @@
 
         <nav class="owner-nav">
 
-            <!-- ダッシュボード -->
             <a href="{{ route('owner.dashboard') }}"
                class="owner-nav-link {{ request()->routeIs('owner.dashboard') ? 'is-active' : '' }}">
                 🏠 ダッシュボード
             </a>
 
-            <!-- 商品管理 -->
             <a href="{{ route('owner.products.index') }}"
                class="owner-nav-link {{ request()->routeIs('owner.products.*') ? 'is-active' : '' }}">
                 📦 商品管理
             </a>
 
-            <!-- カテゴリ管理 -->
-            <a href="{{ route('owner.categories.index') }}"
-               class="owner-nav-link {{ request()->routeIs('owner.categories.*') ? 'is-active' : '' }}">
-                🗂 カテゴリ管理
-            </a>
-
-            <!-- 注文管理 -->
             <a href="{{ route('owner.orders.index') }}"
                class="owner-nav-link {{ request()->routeIs('owner.orders.*') ? 'is-active' : '' }}">
                 🛒 注文管理
             </a>
 
-            <!-- 売上管理 -->
-            <a href="{{ route('owner.sales.index') }}"
-               class="owner-nav-link {{ request()->routeIs('owner.sales.*') ? 'is-active' : '' }}">
-                💳 売上管理
-            </a>
-
-            <!-- 顧客管理 -->
-            <a href="{{ route('owner.customers.index') }}"
-               class="owner-nav-link {{ request()->routeIs('owner.customers.*') ? 'is-active' : '' }}">
-                👤 顧客管理
-            </a>
-
-            <!-- 設定 -->
-            <a href="{{ route('owner.settings.index') }}"
-               class="owner-nav-link {{ request()->routeIs('owner.settings.*') ? 'is-active' : '' }}">
-                ⚙ 設定
-            </a>
+            {{-- 🚫 未実装のため完全削除（これがエラー原因だった）
+            売上管理 / 顧客管理 / 設定
+            --}}
 
         </nav>
 
-        <!-- ログアウト -->
         <form method="POST" action="{{ route('owner.logout') }}" class="owner-logout-form">
             @csrf
             <button type="submit" class="owner-logout-button">ログアウト</button>
         </form>
     </aside>
 
-    <!-- ============================
-          📌 メイン画面
-    ============================= -->
+    <!-- 📌 メイン画面 -->
     <main class="owner-main">
 
-        <!-- 上部ヘッダー -->
         <header class="owner-header">
             <h1 class="owner-page-title">@yield('page-title', '管理画面')</h1>
-
             <div class="owner-header-right">
                 <span class="owner-user-name">{{ auth()->user()->name ?? 'オーナー' }}</span>
             </div>
         </header>
 
-        <!-- ページコンテンツ -->
         <section class="owner-content">
 
-            {{-- 成功通知 --}}
             @if (session('status'))
                 <div class="owner-alert success">
                     {{ session('status') }}
                 </div>
             @endif
 
-            {{-- エラー通知 --}}
             @if ($errors->any())
                 <div class="owner-alert error">
                     <ul>
@@ -107,7 +74,6 @@
                 </div>
             @endif
 
-            {{-- 各ページの内容 --}}
             @yield('content')
 
         </section>

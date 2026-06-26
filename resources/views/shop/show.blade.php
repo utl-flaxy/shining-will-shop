@@ -1,41 +1,82 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container mx-auto p-6">
-    <div class="bg-white rounded shadow-md p-6">
-        <h1 class="text-2xl font-bold mb-4">{{ $product->name }}</h1>
+@section('title', $product->name)
 
-        {{-- 商品画像 --}}
-        @if ($product->image)
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-64 mb-4 rounded">
-        @else
-            <div class="w-64 h-64 bg-gray-100 mb-4 flex items-center justify-center text-gray-400">
-                No Image
+@section('content')
+<div class="container py-5">
+
+    @php
+        // ✅ Filament保存画像（products.image）を直接使う
+        $imageUrl = $product->main_image_url;
+
+        // ✅ 在庫判定も既存ロジックに統一
+        $isSoldOut = $product->totalStock() <= 0;
+    @endphp
+
+    <div class="mb-4">
+        <img src="{{ $imageUrl }}" class="w-full max-w-md rounded shadow">
+    </div>
+
+    <h1 class="text-2xl font-bold mb-2">{{ $product->name }}</h1>
+
+    <p class="text-lg mb-1 {{ $isSoldOut ? 'text-gray-400' : 'text-black' }}">
+        ¥{{ number_format($product->price) }}
+    </p>
+
+    <p class="text-gray-700 mb-4">
+        {{ $product->description }}
+    </p>
+
+    {{-- ========================
+        ✅ カート追加フォーム
+    ======================== --}}
+    <form method="POST" action="{{ route('cart.add', $product) }}">
+        @csrf
+
+        @if($product->variants->count() > 0)
+            <div class="mb-3">
+                <label class="block mb-1">メンバーを選択</label>
+
+                <select name="variant_id"
+                        class="border rounded px-3 py-2 w-full"
+                        {{ $isSoldOut ? 'disabled' : '' }}>
+                    <option value="">選択してください</option>
+
+                    @foreach($product->variants as $variant)
+                        @if($variant->stock > 0)
+                            <option value="{{ $variant->id }}">
+                                {{ $variant->member_name }}
+                            </option>
+                        @else
+                            <option disabled>
+                                {{ $variant->member_name }}（売り切れ）
+                            </option>
+                        @endif
+                    @endforeach
+                </select>
             </div>
         @endif
 
-        {{-- 価格 --}}
-        <p class="text-xl font-semibold mb-2">価格: ¥{{ number_format($product->price) }}</p>
+        <div class="mb-3 w-32">
+            <label class="block mb-1">数量</label>
+            <input type="number"
+                   name="quantity"
+                   class="border rounded px-3 py-2 w-full"
+                   value="1"
+                   min="1"
+                   {{ $isSoldOut ? 'disabled' : '' }}>
+        </div>
 
-        {{-- カテゴリ --}}
-        <p class="text-gray-600 mb-2">カテゴリ: {{ $product->category->name ?? '未分類' }}</p>
-
-        {{-- 在庫 --}}
-        <p class="text-gray-600 mb-4">在庫: {{ $product->stock }}</p>
-
-        {{-- 詳細説明 --}}
-        <p class="text-gray-700 leading-relaxed mb-6">
-            {!! nl2br(e($product->description ?? '説明はありません。')) !!}
-        </p>
-
-        {{-- カートボタン（後でcheckoutへ連携） --}}
-        <form action="{{ route('cart.add', $product->id) }}" method="POST">
-            @csrf
-            <button type="submit"
-                class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2 rounded transition duration-200">
-                カートに追加
+        @if($isSoldOut)
+            <button class="bg-gray-400 text-white px-6 py-2 rounded" disabled>
+                SOLD OUT
             </button>
-        </form>
-    </div>
+        @else
+            <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                カートに入れる
+            </button>
+        @endif
+    </form>
+
 </div>
 @endsection

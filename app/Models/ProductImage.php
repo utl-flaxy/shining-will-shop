@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductImage extends Model
 {
-    protected $fillable = ['product_id','path','sort'];
+    // migration のカラム名 (url, sort_order) に合わせる
+    protected $fillable = [
+        'product_id',
+        'url',
+        'sort_order',
+    ];
 
     public function product()
     {

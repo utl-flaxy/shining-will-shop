@@ -14,11 +14,6 @@ use Carbon\Carbon;
 
 class ProductController extends Controller
 {
-    /**
-     * 商品一覧
-     * - 最新順
-     * - 簡易検索（商品名）
-     */
     public function index(Request $request)
     {
         $q = Product::query()->withCount('variants');
@@ -32,46 +27,36 @@ class ProductController extends Controller
         return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * 新規作成フォーム
-     */
     public function create()
     {
         return view('admin.products.create');
     }
 
-    /**
-     * 保存
-     * - 複数画像の保存
-     * - メンバー別在庫（variants）を配列で受け取り保存
-     * - 販売期間 start_at / end_at
-     * - is_stock_managed で在庫管理ON/OFF
-     */
     public function store(Request $request)
     {
         $data = $this->validateProduct($request);
 
         DB::transaction(function () use ($request, $data) {
-            // 商品作成
             /** @var Product $product */
             $product = Product::create([
-                'name'             => $data['name'],
-                'description'      => $data['description'] ?? null,
-                'price'            => $data['price'],
-                'is_stock_managed' => $data['is_stock_managed'] ?? false,
-                'start_at'         => $this->parseDate($data['start_at'] ?? null),
-                'end_at'           => $this->parseDate($data['end_at'] ?? null),
-                'is_published'     => (bool)($data['is_published'] ?? true),
+                'name'               => $data['name'],
+                'description'        => $data['description'] ?? null,
+                'price'              => $data['price'],
+                // マイグレーションに合わせて is_stock_managed を使う
+                'is_stock_managed'   => $data['is_stock_managed'] ?? true,
+                'start_at'           => $this->parseDate($data['start_at'] ?? null),
+                'end_at'             => $this->parseDate($data['end_at'] ?? null),
+                'is_published'       => (bool)($data['is_published'] ?? true),
             ]);
 
-            // 画像（複数）
+            // 画像（複数） — DB のカラム名は url / sort_order
             if ($request->hasFile('images')) {
                 foreach ((array) $request->file('images') as $i => $file) {
                     $path = $file->store('products', 'public'); // storage/app/public/products
                     ProductImage::create([
                         'product_id' => $product->id,
-                        'path'       => $path,
-                        'sort'       => $i + 1,
+                        'url'        => $path,
+                        'sort_order' => $i + 1,
                     ]);
                 }
             }
@@ -93,65 +78,56 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', '商品を登録しました');
     }
 
-    /**
-     * 編集フォーム
-     */
     public function edit(Product $product)
     {
-        $product->load(['images' => fn($q) => $q->orderBy('sort'), 'variants' ]);
+        $product->load(['images' => fn($q) => $q->orderBy('sort_order'), 'variants' ]);
         return view('admin.products.edit', compact('product'));
     }
 
-    /**
-     * 更新
-     * - 画像追加／削除
-     * - バリアント（既存更新・新規作成・削除同期）
-     */
     public function update(Request $request, Product $product)
     {
         $data = $this->validateProduct($request, isUpdate: true);
 
         DB::transaction(function () use ($request, $product, $data) {
             $product->update([
-                'name'             => $data['name'],
-                'description'      => $data['description'] ?? null,
-                'price'            => $data['price'],
-                'is_stock_managed' => $data['is_stock_managed'] ?? false,
-                'start_at'         => $this->parseDate($data['start_at'] ?? null),
-                'end_at'           => $this->parseDate($data['end_at'] ?? null),
-                'is_published'     => (bool)($data['is_published'] ?? true),
+                'name'               => $data['name'],
+                'description'        => $data['description'] ?? null,
+                'price'              => $data['price'],
+                'is_stock_managed'   => $data['is_stock_managed'] ?? true,
+                'start_at'           => $this->parseDate($data['start_at'] ?? null),
+                'end_at'             => $this->parseDate($data['end_at'] ?? null),
+                'is_published'       => (bool)($data['is_published'] ?? true),
             ]);
 
-            // 画像 追加
+            // 画像 追加（url / sort_order）
             if ($request->hasFile('images')) {
-                $maxSort = (int) $product->images()->max('sort');
+                $maxSort = (int) $product->images()->max('sort_order');
                 foreach ((array) $request->file('images') as $i => $file) {
                     $path = $file->store('products', 'public');
                     $product->images()->create([
-                        'path' => $path,
-                        'sort' => $maxSort + $i + 1,
+                        'url'        => $path,
+                        'sort_order' => $maxSort + $i + 1,
                     ]);
                 }
             }
 
-            // 画像 削除
+            // 画像 削除（url を使用して削除）
             $deleteImageIds = array_filter((array) $request->input('delete_image_ids', []));
             if ($deleteImageIds) {
                 $images = $product->images()->whereIn('id', $deleteImageIds)->get();
                 foreach ($images as $img) {
-                    Storage::disk('public')->delete($img->path);
+                    Storage::disk('public')->delete($img->url);
                     $img->delete();
                 }
             }
 
-            // バリアント同期（idが来たら更新／無ければ作成／送られなかった既存は削除）
+            // バリアント同期（既存更新/新規/削除）
             $payload = collect((array)($data['variants'] ?? []))
                 ->filter(fn($v) => trim($v['name'] ?? '') !== '');
 
             $keepIds = [];
             foreach ($payload as $v) {
                 if (!empty($v['id'])) {
-                    /** @var ProductVariant $variant */
                     $variant = $product->variants()->whereKey($v['id'])->first();
                     if ($variant) {
                         $variant->update([
@@ -171,21 +147,17 @@ class ProductController extends Controller
                 }
             }
 
-            // 送られてこなかった既存バリアントは削除
             $product->variants()->whereNotIn('id', $keepIds ?: [0])->delete();
         });
 
         return back()->with('success', '商品を更新しました');
     }
 
-    /**
-     * 削除
-     */
     public function destroy(Product $product)
     {
         DB::transaction(function () use ($product) {
             foreach ($product->images as $img) {
-                Storage::disk('public')->delete($img->path);
+                Storage::disk('public')->delete($img->url);
             }
             $product->images()->delete();
             $product->variants()->delete();
@@ -195,13 +167,10 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', '商品を削除しました');
     }
 
-    /**
-     * プレビュー（ドラフト表示用・任意）
-     */
     public function preview(Product $product)
     {
-        $product->load(['images' => fn($q) => $q->orderBy('sort'), 'variants']);
-        return view('products.show', compact('product')); // ユーザー側テンプレートで表示
+        $product->load(['images' => fn($q) => $q->orderBy('sort_order'), 'variants']);
+        return view('products.show', compact('product'));
     }
 
     private function validateProduct(Request $request, bool $isUpdate = false): array
@@ -210,6 +179,7 @@ class ProductController extends Controller
             'name'  => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'integer', 'min:0'],
+            // マイグレーションに合わせて is_stock_managed を使う
             'is_stock_managed' => ['nullable', 'boolean'],
             'start_at' => ['nullable', 'date'],
             'end_at'   => ['nullable', 'date', 'after_or_equal:start_at'],
@@ -218,14 +188,12 @@ class ProductController extends Controller
             // 画像（複数）
             'images.*' => [$isUpdate ? 'nullable' : 'sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
 
-            // バリアント（メンバー在庫）
             'variants'            => ['nullable', 'array'],
             'variants.*.id'       => ['nullable', 'integer'],
             'variants.*.name'     => ['nullable', 'string', 'max:120'],
             'variants.*.sku'      => ['nullable', 'string', 'max:120'],
             'variants.*.stock'    => ['nullable', 'integer', 'min:0'],
 
-            // 画像削除（更新時）
             'delete_image_ids'    => ['nullable', 'array'],
             'delete_image_ids.*'  => ['integer'],
         ]);

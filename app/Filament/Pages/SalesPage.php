@@ -3,33 +3,29 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
-use App\Services\StripeService;
 
 class SalesPage extends Page
 {
-    // ✅ ← これを追加！
+    // ✅ 管理パネル指定
     protected static ?string $panel = 'admin_shining';
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    // ✅ ナビゲーション設定
+    protected static ?string $navigationIcon = 'heroicon-o-currency-yen';
     protected static ?string $navigationLabel = '売上一覧';
     protected static ?string $title = '売上一覧';
+
+    // ✅ 表示ビュー
     protected static string $view = 'filament.pages.sales-page';
 
-    public $sales = [];
+    // ✅ 売上データ（今は空配列）
+    public array $sales = [];
 
-    public function mount(StripeService $stripe)
+    public function mount(): void
     {
-        $response = $stripe->getRecentSales(50);
-
-        $this->sales = collect($response->data)->map(function ($sale) {
-            return [
-                'id' => $sale->id,
-                'product_name' => $sale->metadata->product_name ?? '不明',
-                'quantity' => $sale->metadata->quantity ?? 1,
-                'buyer' => $sale->metadata->user_name ?? '未登録',
-                'amount' => number_format($sale->amount / 100),
-                'created_at' => date('Y-m-d H:i', $sale->created),
-                'status' => $sale->status,
-            ];
-        });
+        /**
+         * ✅ 今は Square 未連携なので空データ
+         * ✅ 後から Square API に差し替えるだけでOKな構成
+         */
+        $this->sales = [];
     }
 }

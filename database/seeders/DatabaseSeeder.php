@@ -9,7 +9,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // デモ商品を投入
+        /**
+         * ✅ デモ商品を投入（既存の処理そのまま）
+         */
         Product::updateOrCreate(
             ['sku' => 'TEST-001'],
             [
@@ -23,8 +25,13 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        /**
+         * ✅ 各種シーダーをまとめて実行
+         * ※ 存在していない Seeder はコメントアウトしてもOK
+         */
         $this->call([
-            DemoProductSeeder::class,
+            DemoProductSeeder::class, // 既存
+            OrderSeeder::class,       // ✅ ここを追加（ダミー注文）
         ]);
     }
 }

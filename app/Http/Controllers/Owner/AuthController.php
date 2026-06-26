@@ -10,7 +10,7 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::guard('owner')->check()) {
             return redirect()->route('owner.dashboard');
         }
 
@@ -24,7 +24,8 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        // ✅ 必ず owner ガードを使う
+        if (! Auth::guard('owner')->attempt($credentials)) {
             return back()->withErrors([
                 'email' => 'メールアドレスまたはパスワードが正しくありません。',
             ])->onlyInput('email');
@@ -32,19 +33,12 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        if (! Auth::user()->is_admin) {
-            Auth::logout();
-            return back()->withErrors([
-                'email' => '管理者権限がありません。',
-            ]);
-        }
-
         return redirect()->route('owner.dashboard');
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('owner')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

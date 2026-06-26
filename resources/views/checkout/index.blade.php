@@ -1,60 +1,86 @@
 @extends('layouts.app')
 
+@section('title', 'ご購入手続き')
+
 @section('content')
-<div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">💳 購入手続き</h1>
+<div class="max-w-5xl mx-auto px-4 py-10">
 
-    @if (count($cart) === 0)
-        <p>カートが空です。<a href="{{ url('/') }}" class="text-pink-500">商品一覧に戻る</a></p>
-    @else
-        <table class="w-full mb-6 border-collapse">
-            <thead>
-                <tr class="border-b">
-                    <th class="p-3 text-left">商品名</th>
-                    <th class="p-3 text-left">価格</th>
-                    <th class="p-3 text-left">数量</th>
-                    <th class="p-3 text-left">小計</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $total = 0; @endphp
-                @foreach ($cart as $item)
-                    @php $subtotal = $item['price'] * $item['quantity']; $total += $subtotal; @endphp
-                    <tr class="border-b">
-                        <td class="p-3">{{ $item['name'] }}</td>
-                        <td class="p-3">¥{{ number_format($item['price']) }}</td>
-                        <td class="p-3">{{ $item['quantity'] }}</td>
-                        <td class="p-3">¥{{ number_format($subtotal) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <h1 class="text-2xl font-bold mb-6">ご購入内容の確認</h1>
 
-        <div class="text-right text-lg font-semibold mb-6">
-            合計金額：¥{{ number_format($total) }}
+    @if(empty($cart))
+        <div class="text-center text-gray-500 py-10">
+            カートに商品が入っていません。
         </div>
+    @else
 
-        {{-- 購入フォーム --}}
-        <form action="{{ route('checkout.start') }}" method="POST" class="max-w-lg mx-auto bg-white p-6 rounded shadow">
-            @csrf
-            <div class="mb-4">
-                <label class="block font-semibold mb-2">氏名</label>
-                <input type="text" name="name" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div class="mb-4">
-                <label class="block font-semibold mb-2">メールアドレス</label>
-                <input type="email" name="email" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div class="mb-4">
-                <label class="block font-semibold mb-2">住所</label>
-                <textarea name="address" required class="w-full border rounded px-3 py-2"></textarea>
-            </div>
+    <table class="w-full border text-sm mb-8">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border p-2 text-left">商品名</th>
+                <th class="border p-2 text-right">単価</th>
+                <th class="border p-2 text-center">数量</th>
+                <th class="border p-2 text-right">小計</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $total = 0; @endphp
 
-            <button type="submit"
-                class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-2 rounded transition">
-                注文を確定する
+            @foreach($cart as $item)
+                @php
+                    $qty = $item['quantity'] ?? 1;
+                    $price = $item['price'] ?? 0;
+                    $subtotal = $price * $qty;
+                    $total += $subtotal;
+                @endphp
+                <tr>
+                    <td class="border p-2">{{ $item['name'] }}</td>
+                    <td class="border p-2 text-right">¥{{ number_format($price) }}</td>
+                    <td class="border p-2 text-center">{{ $qty }}</td>
+                    <td class="border p-2 text-right">¥{{ number_format($subtotal) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+
+        <tfoot class="bg-gray-50">
+            <tr>
+                <td colspan="3" class="border p-3 text-right font-bold">合計金額</td>
+                <td class="border p-3 text-right font-bold text-lg">
+                    ¥{{ number_format($total) }}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <form method="POST" action="{{ route('checkout.start') }}" class="space-y-6">
+        @csrf
+
+        <select name="delivery_method" class="w-full border p-3">
+            <option value="pickup">現地渡し</option>
+            <option value="sagawa">佐川急便</option>
+        </select>
+
+        <textarea name="note_to_talent" class="w-full border p-3" placeholder="応援メッセージなど"></textarea>
+
+        @if($total === 0)
+            <button
+                type="submit"
+                class="checkout-submit-btn w-full mt-6 font-bold py-4 rounded"
+            >
+                ✅ 0円テスト注文を確定する
             </button>
-        </form>
+        @else
+            <button
+                type="submit"
+                class="checkout-submit-btn w-full mt-6 font-bold py-4 rounded"
+                style="background-color:#16a34a;"
+            >
+                Squareで決済する
+            </button>
+        @endif
+
+    </form>
+
     @endif
+
 </div>
 @endsection

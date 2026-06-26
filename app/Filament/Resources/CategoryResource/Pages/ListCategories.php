@@ -10,18 +10,14 @@ class ListCategories extends ListRecords
 {
     protected static string $resource = CategoryResource::class;
 
+    /**
+     * ✅ ここで「新規作成ボタン」を明示的に表示
+     */
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('新規カテゴリ追加'),
         ];
-    }
-
-    /**
-     * 一覧の説明文（任意）
-     */
-    public function getSubheading(): ?string
-    {
-        return '登録されているカテゴリーの一覧です。';
     }
 }

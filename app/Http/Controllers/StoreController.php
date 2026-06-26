@@ -4,53 +4,56 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class StoreController extends Controller
 {
     /**
-     * 🏠 トップページ（カテゴリ一覧 + 新着商品）
+     * ✅ トップページ
      */
-    public function index()
+    public function home()
     {
-        try {
-            // カテゴリ一覧（名前順）
-            $categories = Category::orderBy('name')->get();
+        // ✅ 並び順は name でOK（orderカラムは存在しない）
+        $categories = Category::orderBy('name')->get();
 
-            // 新着商品（作成日時の降順で8件）
-            $newProducts = Product::orderBy('created_at', 'desc')->take(8)->get();
+        $newProducts = Product::with('images')
+            ->where('is_published', 1)
+            ->where('is_active', 1)
+            ->latest()
+            ->take(8)
+            ->get();
 
-            // ✅ ビューへ安全にデータを渡す
-            return view('shop.index', compact('categories', 'newProducts'));
-        } catch (\Throwable $e) {
-            Log::error('❌ StoreController@index エラー: ' . $e->getMessage());
-
-            // 万が一エラーがあってもトップページは壊さない
-            return view('shop.index', [
-                'categories' => collect(),
-                'newProducts' => collect(),
-            ]);
-        }
+        return view('shop.home', compact('categories', 'newProducts'));
     }
 
     /**
-     * 🗂 カテゴリ別商品一覧
+     * ✅ 商品一覧ページ
+     */
+    public function index()
+    {
+        $categories = Category::orderBy('name')->get();
+
+        $products = Product::with('images')
+            ->where('is_published', 1)
+            ->where('is_active', 1)
+            ->latest()
+            ->paginate(12);
+
+        return view('shop.index', compact('categories', 'products'));
+    }
+
+    /**
+     * ✅ カテゴリ別商品一覧
      */
     public function category($id)
     {
-        try {
-            $category = Category::findOrFail($id);
-            $products = Product::where('category_id', $id)
-                ->orderBy('created_at', 'desc')
-                ->paginate(12);
+        $category = Category::findOrFail($id);
 
-            return view('shop.category', compact('category', 'products'));
-        } catch (\Throwable $e) {
-            Log::error("❌ StoreController@category エラー: " . $e->getMessage());
+        $products = Product::with('images')
+            ->where('category_id', $id)
+            ->where('is_active', 1)
+            ->latest()
+            ->paginate(12);
 
-            // カテゴリが存在しない or エラー時に安全にリダイレクト
-            return redirect()->route('store.index')->with('error', '指定されたカテゴリが見つかりません。');
-        }
+        return view('shop.category', compact('category', 'products'));
     }
 }

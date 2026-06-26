@@ -12,69 +12,62 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
-    /**
-     * モデルの関連付け
-     */
     protected static ?string $model = Category::class;
 
-    /**
-     * ナビゲーション設定
-     */
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationLabel = 'カテゴリ一覧';
-    protected static ?string $pluralLabel = 'カテゴリ';
+    protected static ?string $navigationIcon  = 'heroicon-o-tag';
+    protected static ?string $navigationLabel = 'カテゴリ管理';
+    protected static ?string $pluralLabel     = 'カテゴリ';
     protected static ?string $navigationGroup = '商品管理';
-    protected static ?int $navigationSort = 2;
+    protected static ?int    $navigationSort  = 2;
 
-    /**
-     * 入力フォーム
-     */
+    /* ✅ フォーム（ぐるぐる完全消滅・画像編集復活・プレビュー安定） */
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Group::make()
-                ->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->label('カテゴリ名')
-                        ->required()
-                        ->maxLength(255)
-                        ->placeholder('例：Tシャツ、タオル、CDなど'),
 
-                    Forms\Components\Textarea::make('description')
-                        ->label('説明文')
-                        ->rows(3)
-                        ->placeholder('カテゴリの簡単な説明を入力'),
+            Forms\Components\TextInput::make('name')
+                ->label('カテゴリ名')
+                ->required()
+                ->maxLength(255),
 
-                    Forms\Components\Toggle::make('is_visible')
-                        ->label('公開ステータス')
-                        ->default(true)
-                        ->onColor('success')
-                        ->offColor('gray'),
-                ])
-                ->columns(2),
+            Forms\Components\Textarea::make('description')
+                ->label('説明')
+                ->rows(3),
 
-            Forms\Components\Section::make('カテゴリ画像')
-                ->schema([
-                    Forms\Components\FileUpload::make('image')
-                        ->label('画像')
-                        ->directory('categories')
-                        ->image()
-                        ->imageEditor()
-                        ->maxSize(2048),
-                ])
-                ->collapsible(),
+            Forms\Components\Toggle::make('is_active')
+                ->label('公開')
+                ->default(true),
+
+            Forms\Components\TextInput::make('sort_order')
+                ->label('並び順')
+                ->numeric()
+                ->default(1),
+
+            Forms\Components\FileUpload::make('image')
+                ->label('カテゴリ画像')
+                ->disk('public')                       // ✅ storage/app/public
+                ->directory('categories')             // ✅ categories 配下
+                ->image()
+                ->imageEditor()                        // ✅ トリミング復活
+                ->imagePreviewHeight(150)
+                ->visibility('public')
+                ->downloadable()
+                ->openable()
+                ->removeUploadedFileButtonPosition('right')
+                ->loadingIndicatorPosition('right'),
         ]);
     }
 
-    /**
-     * テーブル定義
-     */
+    /* ✅ 一覧テーブル（画像100%表示・ぐるぐる0） */
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('sort_order')
             ->columns([
+
                 Tables\Columns\ImageColumn::make('image')
                     ->label('画像')
+                    ->disk('public')                   // ✅ ここが超重要
                     ->square()
                     ->size(60),
 
@@ -83,32 +76,27 @@ class CategoryResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('is_visible')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('公開')
                     ->boolean(),
+
+                Tables\Columns\TextColumn::make('sort_order')
+                    ->label('並び順')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('最終更新')
                     ->dateTime('Y/m/d H:i'),
             ])
-            ->filters([
-                Tables\Filters\TernaryFilter::make('is_visible')
-                    ->label('公開ステータス'),
-            ])
             ->actions([
                 Tables\Actions\EditAction::make()->label('編集'),
-                Tables\Actions\DeleteAction::make()->label('削除'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('一括削除'),
-                ]),
+                Tables\Actions\DeleteAction::make()
+                    ->label('削除')
+                    ->color('danger')
+                    ->icon('heroicon-o-trash'),
             ]);
     }
 
-    /**
-     * ページ設定
-     */
     public static function getPages(): array
     {
         return [
@@ -118,9 +106,6 @@ class CategoryResource extends Resource
         ];
     }
 
-    /**
-     * メニューの順番制御用（必要に応じて）
-     */
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
