@@ -16,6 +16,14 @@
 /public/build
 /public/hot
 /public/storage
+
+# サンプル画像だけ管理する
+!/storage/app/public/
+!/storage/app/public/categories/
+!/storage/app/public/products/
+!/storage/app/public/categories/*.jpg
+!/storage/app/public/products/*.jpg
+!/storage/app/public/.gitignore
 /storage/*.key
 /storage/pail
 /vendor
