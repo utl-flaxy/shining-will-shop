@@ -2,7 +2,8 @@
 
 > Laravel × Filament × AWS を用いて開発した、アイドル・アーティスト向けECサイト
 
-商品管理・カテゴリ管理・注文管理・在庫管理を一貫して実装し、AWS EC2（Ubuntu・Nginx・MariaDB・Amazon S3）へデプロイしたポートフォリオです。
+商品管理・カテゴリ管理・注文管理・在庫管理を実装し、
+AWS EC2（Ubuntu・Nginx・MariaDB）およびAmazon S3を利用してデプロイしたポートフォリオです。
 
 ---
 
