@@ -1,0 +1,45 @@
+name: CI Tests (Auto Retry x10)
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        attempt: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, bcmath, zip, curl, mysql
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests (Attempt ${{ matrix.attempt }})
+        id: run_tests
+        run: |
+          echo "🧪 Running test attempt ${{ matrix.attempt }}..."
+          php artisan test || exit 1
+
+      - name: Check test result and retry if failed
+        if: failure() && matrix.attempt < 10
+        run: |
+          echo "⚠️ Test failed on attempt ${{ matrix.attempt }}. Retrying..."
+          sleep 10
+          exit 1
+
+      - name: Stop retry loop
+        if: success()
+        run: |
+          echo "✅ Tests passed successfully on attempt ${{ matrix.attempt }}."

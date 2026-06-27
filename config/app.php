@@ -66,7 +66,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 暗号化キー
+    | 暗号化キー（← ここが重要）
     |--------------------------------------------------------------------------
     */
 
@@ -78,10 +78,6 @@ return [
     |--------------------------------------------------------------------------
     | 自動ロードされるサービスプロバイダ
     |--------------------------------------------------------------------------
-    |
-    | ここにリストされたサービスプロバイダは、アプリケーションの
-    | 起動時に自動的にロードされます。
-    |
     */
 
     'providers' => [
@@ -114,30 +110,25 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        App\Providers\FilamentServiceProvider::class,
 
         /*
         |--------------------------------------------------------------------------
-        | サードパーティプロバイダ
+        | Filament 関連
         |--------------------------------------------------------------------------
         */
-
-        // Filament 管理画面（v3対応）
-        App\Providers\Filament\AdminShiningPanelProvider::class,
+        App\Providers\FilamentServiceProvider::class,
+        // App\Providers\Filament\AdminPanelProvider::class,
+        // App\Providers\FilamentWidgetsServiceProvider::class,
 
         /*
         |--------------------------------------------------------------------------
         | アプリケーション固有のサービスプロバイダ
         |--------------------------------------------------------------------------
         */
-
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\Filament\AdminPanelProvider::class,
-        App\Providers\Filament\AdminShiningPanelProvider::class,
-
     ],
 
     /*
@@ -147,10 +138,6 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // ここにカスタムエイリアスを追加可能
+        // カスタムエイリアスがあればここに追加
     ])->toArray(),
-
-    App\Providers\FilamentWidgetsServiceProvider::class,
-
-
 ];

@@ -1,31 +1,35 @@
 <x-filament::page>
-    <div class="space-y-6">
-        <h2 class="text-xl font-bold">売上一覧</h2>
+    <h2 class="text-lg font-bold mb-6">売上一覧（Square連携予定）</h2>
 
-        {{-- Excel出力フォーム --}}
-        <form action="{{ route('admin.export-sales') }}" method="GET" class="bg-gray-50 p-4 rounded-md border flex flex-wrap gap-3 items-end">
-            <div>
-                <label class="text-sm font-medium">開始日</label>
-                <input type="date" name="start_date" class="border rounded px-2 py-1">
-            </div>
-            <div>
-                <label class="text-sm font-medium">終了日</label>
-                <input type="date" name="end_date" class="border rounded px-2 py-1">
-            </div>
-            <div>
-                <label class="text-sm font-medium">商品名</label>
-                <input type="text" name="product_name" placeholder="例: Tシャツ" class="border rounded px-2 py-1">
-            </div>
-            <div>
-                <label class="text-sm font-medium">購入者名</label>
-                <input type="text" name="buyer_name" placeholder="例: 山田太郎" class="border rounded px-2 py-1">
-            </div>
-            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Excel出力
-            </button>
-        </form>
-
-        {{-- 売上テーブル --}}
-        @include('filament.pages.partials.sales-table', ['sales' => $sales])
-    </div>
+    @if (count($sales) === 0)
+        <div class="p-6 bg-white rounded shadow text-gray-600">
+            現在、売上データはありません。<br>
+            Square連携後にここへ表示されます。
+        </div>
+    @else
+        <table class="w-full bg-white rounded shadow overflow-hidden">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3 text-left">ID</th>
+                    <th class="p-3 text-left">商品名</th>
+                    <th class="p-3 text-left">購入者</th>
+                    <th class="p-3 text-right">金額</th>
+                    <th class="p-3 text-left">日付</th>
+                    <th class="p-3 text-left">状態</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($sales as $sale)
+                    <tr class="border-t">
+                        <td class="p-3">{{ $sale['id'] }}</td>
+                        <td class="p-3">{{ $sale['product_name'] }}</td>
+                        <td class="p-3">{{ $sale['buyer'] }}</td>
+                        <td class="p-3 text-right">¥{{ $sale['amount'] }}</td>
+                        <td class="p-3">{{ $sale['created_at'] }}</td>
+                        <td class="p-3">{{ $sale['status'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 </x-filament::page>

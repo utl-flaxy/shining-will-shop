@@ -2,28 +2,6 @@ version: "3.8"
 
 services:
   # -------------------------------------------------------
-  # TLS終端用 リバースプロキシ (nginx)
-  # -------------------------------------------------------
-  proxy:
-    image: nginx:stable
-    container_name: shining-will-shop-proxy
-    restart: unless-stopped
-    ports:
-      - "80:80" # HTTP（自動リダイレクト用）
-      - "443:443" # HTTPS公開
-    volumes:
-      # nginx仮想ホスト設定
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-      # 証明書・秘密鍵（mkcert または Let's Encrypt）
-      - ./docker/ssl:/etc/nginx/ssl:ro
-      # Laravelのpublicディレクトリをマウント
-      - ./:/var/www/html
-    depends_on:
-      - laravel.test
-    networks:
-      - sail
-
-  # -------------------------------------------------------
   # Queue Worker（非同期処理）
   # -------------------------------------------------------
   worker:

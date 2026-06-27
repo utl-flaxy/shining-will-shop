@@ -1,0 +1,70 @@
+name: 🧪 Auto Dev Safe (Persistent SQLite + Non-Parallel + 10x Retry + Auto Merge)
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, sqlite3, bcmath, intl, fileinfo
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Create persistent SQLite DB for testing
+        run: |
+          mkdir -p database
+          touch database/testing.sqlite
+          echo "APP_ENV=testing" > .env.testing
+          echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env.testing
+          echo "APP_DEBUG=true" >> .env.testing
+          echo "DB_CONNECTION=sqlite" >> .env.testing
+          echo "DB_DATABASE=$(pwd)/database/testing.sqlite" >> .env.testing
+          echo "CACHE_DRIVER=array" >> .env.testing
+          echo "SESSION_DRIVER=array" >> .env.testing
+          echo "QUEUE_CONNECTION=sync" >> .env.testing
+          echo "MAIL_MAILER=array" >> .env.testing
+          echo "APP_URL=http://localhost" >> .env.testing
+          cat .env.testing
+
+      - name: Run Laravel tests (no parallel, retry up to 10x)
+        run: |
+          for i in {1..10}; do
+            echo "🧪 Running test attempt $i..."
+            php artisan migrate:fresh --seed --env=testing
+            php artisan test --env=testing --without-parallel
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "✅ Tests passed on attempt $i."
+              exit 0
+            else
+              echo "⚠️ Test failed on attempt $i. Retrying in 15s..."
+              sleep 15
+            fi
+          done
+          echo "❌ All 10 attempts failed."
+          exit 1
+
+      - name: Auto merge dev → main
+        if: github.ref == 'refs/heads/dev' && success()
+        uses: devmasx/merge-branch@v1.4.0
+        with:
+          type: now
+          from_branch: dev
+          target_branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,5 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'stripe/webhook',
         'api/stripe/webhook',
+        'admin/login',
+        'livewire/*',
     ];
 }

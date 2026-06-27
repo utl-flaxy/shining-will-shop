@@ -11,7 +11,7 @@ return new class extends Migration
         // Add images column only if it does not already exist
         if (! Schema::hasColumn('products', 'images')) {
             Schema::table('products', function (Blueprint $table) {
-                $table->json('images')->nullable()->after('price');
+                $table->json('images')->nullable();
             });
         }
     }

@@ -1,0 +1,10 @@
+import Alpine from 'alpinejs';
+import focus from '@alpinejs/focus';
+import persist from '@alpinejs/persist';
+
+// Filament/アプリで使う Alpine をここで一度だけ初期化する
+Alpine.plugin(focus);
+Alpine.plugin(persist);
+
+window.Alpine = Alpine;
+Alpine.start();

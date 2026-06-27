@@ -1,0 +1,118 @@
+/* ================================
+   カラーミー風 Filament 管理画面テーマ
+   ================================ */
+
+/* 共通レイアウト */
+:root {
+  --primary-50: #f5f7fa;
+  --primary-100: #e6ecf2;
+  --primary-200: #ccd8e2;
+  --primary-300: #99b1c6;
+  --primary-400: #6689aa;
+  --primary-500: #33618e;
+  /* メインカラー：カラーミーの青系 */
+  --primary-600: #264b6d;
+  --primary-700: #1b374e;
+  --primary-800: #122637;
+  --primary-900: #09151d;
+
+  --sidebar-bg: #f9fafb;
+  --sidebar-border: #d8dee4;
+  --header-bg: #ffffff;
+  --body-bg: #f5f6f7;
+}
+
+/* 全体 */
+body.filament-body {
+  font-family: 'Noto Sans JP', 'Inter', sans-serif;
+  background-color: var(--body-bg);
+  color: #333;
+}
+
+/* ヘッダー */
+.fi-topbar {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid #e0e4e8;
+  box-shadow: none;
+}
+
+.fi-topbar .fi-topbar-item {
+  color: #444;
+}
+
+/* サイドバー */
+.fi-sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+}
+
+.fi-sidebar-nav-item {
+  color: #333;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.fi-sidebar-nav-item:hover {
+  background-color: #e9edf2;
+}
+
+.fi-sidebar-nav-item.fi-active {
+  background-color: #dbe4ee;
+  color: var(--primary-700);
+}
+
+/* テーブルやリスト */
+.fi-table {
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  background-color: #fff;
+  box-shadow: none;
+}
+
+/* フォーム */
+input,
+select,
+textarea {
+  border-radius: 4px !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ボタン */
+button.fi-btn {
+  border-radius: 4px;
+  font-weight: 600;
+  transition: background-color .2s ease;
+}
+
+button.fi-btn-primary {
+  background-color: var(--primary-500);
+  color: white;
+}
+
+button.fi-btn-primary:hover {
+  background-color: var(--primary-600);
+}
+
+/* カード */
+.fi-resource-index {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+}
+
+/* ページ見出し */
+.fi-page-heading {
+  color: #2c3e50;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: .5rem;
+  margin-bottom: 1rem;
+}
+
+/* アバター */
+.fi-user-avatar {
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+}

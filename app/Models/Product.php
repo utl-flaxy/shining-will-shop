@@ -3,72 +3,70 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class Product extends Model
 {
-    protected $guarded = [];
-    protected $casts = [
-        'images' => 'array',
-        'is_active' => 'boolean',
+    protected $fillable = [
+        'category_id',
+        'name',
+        'description',
+        'price',
+        'stock',
+        'sku',
+        'is_published',
+        'is_active',
+        // マイグレーションに合わせる
+        'is_stock_managed',
     ];
 
-    /**
-     * Relationship: Product belongs to Category
-     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Scope: Search by keyword (name or description)
-     */
-    public function scopeSearch(Builder $query, ?string $keyword): Builder
+    public function variants()
     {
-        if (empty($keyword)) {
-            return $query;
-        }
-
-        return $query->where(function ($q) use ($keyword) {
-            $q->where('name', 'like', "%{$keyword}%")
-              ->orWhere('description', 'like', "%{$keyword}%");
-        });
+        return $this->hasMany(ProductVariant::class);
     }
 
-    /**
-     * Scope: Filter by category
-     */
-    public function scopeByCategory(Builder $query, $categoryId): Builder
+    public function isSoldOut()
     {
-        if (empty($categoryId)) {
-            return $query;
-        }
-
-        return $query->where('category_id', $categoryId);
+        return $this->totalStock() <= 0;
     }
 
-    /**
-     * Scope: Filter by price range
-     */
-    public function scopePriceRange(Builder $query, ?int $minPrice, ?int $maxPrice): Builder
+    public function totalStock()
     {
-        if ($minPrice !== null && $minPrice >= 0) {
-            $query->where('price', '>=', $minPrice);
+        // migration のカラム名に合わせて判定
+        if (! $this->is_stock_managed) {
+            return 9999;
         }
 
-        if ($maxPrice !== null && $maxPrice >= 0) {
-            $query->where('price', '<=', $maxPrice);
+        if ($this->variants()->count() > 0) {
+            return $this->variants()->sum('stock');
         }
 
-        return $query;
+        return $this->stock;
     }
 
-    /**
-     * Scope: Only active products
-     */
-    public function scopeActive(Builder $query): Builder
+    public function isAvailableForSale(): bool
     {
-        return $query->where('is_active', true);
+        if (isset($this->is_active) && ! $this->is_active) {
+            return false;
+        }
+
+        if (isset($this->is_published) && ! $this->is_published) {
+            return false;
+        }
+
+        if ($this->is_stock_managed && $this->isSoldOut()) {
+            return false;
+        }
+
+        return true;
     }
 }

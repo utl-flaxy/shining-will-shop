@@ -6,7 +6,6 @@ return [
     App\Providers\EventServiceProvider::class,
     App\Providers\RouteServiceProvider::class,
 
-    // ← この2行を必ず追加！
-    App\Providers\Filament\AdminPanelProvider::class,
+    // ✅ 残すのはこの1行のみ
     App\Providers\Filament\AdminShiningPanelProvider::class,
 ];
