@@ -1524,7 +1524,7 @@ sudo systemctl restart nginx
 
 - クレジットカード決済
 - 決済完了後の注文確定
-- 決済失敗時のロールバック
+- 決済結果を考慮した注文処理
 - Webhook連携
 
 などを実装し、実際のECサイトに近い構成へ発展させたいと考えています。
@@ -1586,7 +1586,7 @@ sudo systemctl restart nginx
 
 画像はAmazon S3で管理していますが、
 
-今後はCloudFrontを導入し、
+今後はAmazon CloudFrontを導入し、
 
 - CDN配信
 - キャッシュ最適化
@@ -1631,7 +1631,7 @@ sudo systemctl restart nginx
 
 最後までREADMEをご覧いただき、ありがとうございました。
 
-このプロジェクトでは、Laravelを中心に、AWS・MariaDB・Amazon S3・Filamentを組み合わせ、ECサイトの企画から設計・実装・デプロイまで一貫して取り組みました。
+このプロジェクトでは、Laravelを中心に、AWS・MariaDB・Amazon S3・Filamentを組み合わせ、ECサイトの要件整理・設計・実装・デプロイまでまで一貫して取り組みました。
 
 今後も、保守性・拡張性を意識した設計を大切にしながら、新しい技術にも積極的に挑戦し、より実践的なWebアプリケーション開発に取り組んでいきます。
 
