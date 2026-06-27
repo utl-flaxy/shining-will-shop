@@ -1563,15 +1563,24 @@ sudo systemctl restart nginx
 
 ## CI/CD
 
-現在は手動デプロイを行っています。
+現在はAWS EC2へ手動でデプロイを行っています。
 
-今後はGitHub Actionsを利用し、
+デプロイ時は以下の手順で反映しています。
 
-- テスト
-- ビルド
-- デプロイ
+- git pull
+- composer install
+- npm run build
+- php artisan migrate --force
+- php artisan optimize
+- Nginx / PHP-FPM 再起動
 
-まで自動化することで、継続的な開発・運用を目指します。
+今後はGitHub Actionsを導入し、
+
+- 自動テスト
+- 自動ビルド
+- AWS EC2への自動デプロイ
+
+まで含めたCI/CDパイプラインを構築する予定です。
 
 ---
 
