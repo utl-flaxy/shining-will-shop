@@ -77,9 +77,9 @@ https://github.com/utl-flaxy/shining-will-shop
 
 # 📸 スクリーンショット
 
-## トップページ
+### トップページ
 
-> （docs/images/top.png）
+![トップページ](docs/images/top.png)
 
 ---
 
