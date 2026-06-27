@@ -795,9 +795,7 @@ belongsTo(ProductVariant)
 
 ## 画像管理
 
-Productsテーブルへ画像URLを直接持たせず、
-
-ProductImagesテーブルへ分離しました。
+Productsテーブルへ画像情報を直接保持せず、ProductImagesテーブルへ分離しました。
 
 これにより、
 
@@ -936,9 +934,7 @@ belongsTo(ProductVariant)
 
 これにより、
 
-SQLを直接記述する箇所を減らし、
-
-Laravelらしい実装を心掛けました。
+Eloquent Relationshipを利用することで、関連データをオブジェクトとして扱えるようにし、保守性と可読性を向上させています。
 
 ---
 
