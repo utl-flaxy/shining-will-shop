@@ -83,27 +83,27 @@ https://github.com/utl-flaxy/shining-will-shop
 
 ---
 
-## 商品一覧
+### 商品一覧
 
-> （docs/images/products.png）
-
----
-
-## 商品詳細
-
-> （docs/images/detail.png）
+![商品一覧](docs/images/products.png)
 
 ---
 
-## 管理画面
+### 商品詳細
 
-> （docs/images/admin-dashboard.png）
+![商品詳細](docs/images/product-detail.png)
 
 ---
 
-## 注文一覧
+### 管理画面
 
-> （docs/images/orders.png）
+![管理画面](docs/images/admin-dashboard.png)
+
+---
+
+### 注文一覧
+
+![注文一覧](docs/images/admin-orders.png)
 
 ---
 
