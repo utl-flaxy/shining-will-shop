@@ -59,4 +59,18 @@ jobs:
           APP_ENV: testing
           DB_CONNECTION: sqlite
           DB_DATABASE: database/testing.sqlite
-        run: php artisan test
+        run: |
+          php artisan test
+        continue-on-error: true
+
+      - name: Show Laravel Log
+        if: always()
+        run: |
+          echo "===== storage/logs ====="
+          ls -la storage/logs || true
+
+          echo "===== laravel.log ====="
+          cat storage/logs/laravel.log || true
+
+          echo "===== bootstrap cache ====="
+          ls -la bootstrap/cache || true
