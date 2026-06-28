@@ -2,12 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Login;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Pages;
-use Filament\Widgets;
-use App\Filament\Pages\Login;
 use Filament\Support\Assets\Css;
+use Filament\Widgets\AccountWidget;
 use Illuminate\Support\Facades\Vite;
 
 class AdminPanelProvider extends PanelProvider
@@ -18,31 +17,38 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
 
-            // ✅ ログイン画面
             ->login(Login::class)
 
-            // ✅ Filament専用ガード
-            ->authGuard('filament')
+            ->authGuard('web')
 
-            // ✅ ミドルウェア
-            ->middleware(['web'])
-
-            // ✅ ダッシュボード
-            ->pages([
-                Pages\Dashboard::class,
+            ->middleware([
+                'web',
             ])
 
-            // ✅ ウィジェット
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources',
+            )
+
+            ->discoverPages(
+                in: app_path('Filament/Pages'),
+                for: 'App\\Filament\\Pages',
+            )
+
+            ->discoverWidgets(
+                in: app_path('Filament/Widgets'),
+                for: 'App\\Filament\\Widgets',
+            )
+
             ->widgets([
-                Widgets\AccountWidget::class,
-            ])
-
-            // ✅ Shining Will 専用テーマCSSを読み込む（最重要）
-            ->assets([
-                Css::make(
-                    'filament-colorme',
-                    Vite::asset('resources/css/filament-colorme.css')
-                ),
+                AccountWidget::class,
             ]);
+
+            //->assets([
+               // Css::make(
+                    //'filament-colorme',
+                    //Vite::asset('resources/css/filament-colorme.css')
+                //),
+            //]);
     }
 }

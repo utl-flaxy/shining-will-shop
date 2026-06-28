@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
@@ -42,6 +43,7 @@ class Dashboard extends Page
 
     public function mount(): void
     {
+        // 売上集計
         $this->totalSales = (int) Order::sum('total_amount');
 
         $this->todaySales = (int) Order::whereDate(
@@ -57,6 +59,7 @@ class Dashboard extends Page
             now()->month
         )->sum('total_amount');
 
+        // 件数集計
         $this->orderCount = Order::count();
 
         $this->productCount = Product::count();
@@ -65,19 +68,23 @@ class Dashboard extends Page
 
         $this->categoryCount = Category::count();
 
-        $this->soldOutCount = Product::get()
-            ->filter(fn ($product) => $product->totalStock() <= 0)
+        // 売り切れ商品数
+        $this->soldOutCount = Product::all()
+            ->filter(fn (Product $product) => $product->totalStock() <= 0)
             ->count();
 
+        // 発送待ち件数
         $this->shippingWaitingCount = Order::whereIn(
             'status',
             [
-                Order::STATUS_PENDING,
-                Order::STATUS_PREPARING,
+                OrderStatus::Pending->value,
+                OrderStatus::Preparing->value,
             ]
         )->count();
 
-        $this->latestOrders = Order::latest()
+        // 最新注文
+        $this->latestOrders = Order::with('user')
+            ->latest()
             ->take(5)
             ->get();
     }

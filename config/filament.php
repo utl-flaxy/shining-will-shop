@@ -75,7 +75,7 @@ return [
             |--------------------------------------------------------------------------
             */
             'pages' => [
-                Pages\Dashboard::class,
+                //Pages\Dashboard::class,
             ],
 
             'widgets' => [
