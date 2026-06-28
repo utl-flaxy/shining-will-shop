@@ -1,7 +1,3 @@
-@php
-use Illuminate\Support\Facades\Storage;
-@endphp
-
 @extends('layouts.app')
 
 @section('title', 'Shining Will Shop')
@@ -50,13 +46,13 @@ use Illuminate\Support\Facades\Storage;
                     @if($category->is_active)
                         <a href="{{ route('store.categories', $category->id) }}"
                            class="bg-white border rounded-2xl overflow-hidden hover:shadow-lg transition">
-
                             <img
-                                src="{{ $category->image
-                                    ? Storage::disk('s3')->url($category->image)
-                                    : asset('images/default-category.jpg') }}"
-                                class="w-full h-40 object-cover"
-                            >
+  				src="{{ $category->image
+				    ? asset('storage/' . $category->image)
+				    : asset('images/default-category.jpg') }}"
+				alt="{{ $category->name }}"
+				class="w-full h-40 object-cover"
+		            >
 
                             <div class="p-4 text-center">
                                 <div class="font-semibold text-sm mb-1">
@@ -112,7 +108,7 @@ use Illuminate\Support\Facades\Storage;
                         <div class="relative aspect-square bg-gray-100 overflow-hidden">
                             <img
                                 src="{{ $mainImage
-                                    ? Storage::disk('s3')->url($mainImage->url)
+                                    ? asset('storage/' . $mainImage->url)
                                     : asset('images/no-image.png') }}"
                                 alt="{{ $product->name }}"
                                 class="w-full h-full object-cover group-hover:scale-105 transition"

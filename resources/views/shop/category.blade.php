@@ -1,7 +1,3 @@
-@php
-use Illuminate\Support\Facades\Storage;
-@endphp
-
 @extends('layouts.app')
 
 @section('title', $category->name)
@@ -28,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
           $mainImage = optional($product->images)->first();
 
           $mainUrl = $mainImage && $mainImage->url
-            ? Storage::url($mainImage->url)
+            ? asset('storage/' . ltrim($mainImage->url, '/'))
             : asset('images/no-image.png');
         @endphp
 

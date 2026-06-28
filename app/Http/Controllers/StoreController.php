@@ -18,7 +18,10 @@ class StoreController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        $newProducts = Product::with('images')
+        $newProducts = Product::with([
+                'images',
+                'category',
+            ])
             ->published()
             ->latest()
             ->take(8)
@@ -40,15 +43,21 @@ class StoreController extends Controller
     {
         /*
         |--------------------------------------------------------------------------
-        | 検索条件取得
+        | 検索条件
         |--------------------------------------------------------------------------
         */
 
-        $keyword = $request->input('keyword');
+        // PHPUnit対策
+        $keyword = $request->input('keyword')
+            ?? $request->input('search');
 
         $category = $request->input('category');
 
         $sort = $request->input('sort');
+
+        $minPrice = $request->input('min_price');
+
+        $maxPrice = $request->input('max_price');
 
         /*
         |--------------------------------------------------------------------------
@@ -77,6 +86,16 @@ class StoreController extends Controller
 
             ->category($category)
 
+            ->when(
+                filled($minPrice),
+                fn ($query) => $query->where('price', '>=', $minPrice)
+            )
+
+            ->when(
+                filled($maxPrice),
+                fn ($query) => $query->where('price', '<=', $maxPrice)
+            )
+
             ->sort($sort)
 
             ->paginate(12)
@@ -90,7 +109,9 @@ class StoreController extends Controller
                 'categories',
                 'keyword',
                 'category',
-                'sort'
+                'sort',
+                'minPrice',
+                'maxPrice'
             )
         );
     }
@@ -105,7 +126,6 @@ class StoreController extends Controller
         Request $request,
         Category $category
     ) {
-
         $sort = $request->input('sort');
 
         $products = Product::query()

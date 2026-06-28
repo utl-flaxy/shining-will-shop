@@ -2,46 +2,27 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Product;
-use App\Models\ProductVariant;
 
 class Order extends Model
 {
     use HasFactory;
 
-    /*
-    |--------------------------------------------------------------------------
-    | 注文ステータス
-    |--------------------------------------------------------------------------
-    */
-
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_PREPARING = 'preparing';
-    public const STATUS_SHIPPED = 'shipped';
-    public const STATUS_COMPLETED = 'completed';
-    public const STATUS_CANCELLED = 'cancelled';
-
-    public static function statuses(): array
-    {
-        return [
-            self::STATUS_PENDING => '受付',
-            self::STATUS_PREPARING => '発送準備中',
-            self::STATUS_SHIPPED => '発送済み',
-            self::STATUS_COMPLETED => '配送完了',
-            self::STATUS_CANCELLED => 'キャンセル',
-        ];
-    }
-
     protected $fillable = [
+        'user_id',
+
         'order_number',
+
         'customer_name',
         'customer_email',
         'customer_phone',
         'shipping_address',
 
         'delivery_method',
+
+        'shipping_company',
 
         'subtotal',
         'shipping_fee',
@@ -65,6 +46,8 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'status'                    => OrderStatus::class,
+
         'shipped_at'                => 'datetime',
         'paid_at'                   => 'datetime',
         'bank_deposit_confirmed_at' => 'datetime',
@@ -77,15 +60,30 @@ class Order extends Model
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * 注文ユーザー
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 注文明細
+     */
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * エイリアス
+     */
     public function orderItems()
     {
         return $this->items();
     }
+
     /*
     |--------------------------------------------------------------------------
     | 在庫減算
@@ -109,7 +107,7 @@ class Order extends Model
 
             /*
             |--------------------------------------------------------------------------
-            | メンバー別在庫
+            | バリアント在庫
             |--------------------------------------------------------------------------
             */
 
@@ -131,17 +129,14 @@ class Order extends Model
                     );
                 }
 
-                $variant->decrement(
-                    'stock',
-                    $qty
-                );
+                $variant->decrement('stock', $qty);
 
                 continue;
             }
 
             /*
             |--------------------------------------------------------------------------
-            | 通常商品の在庫
+            | 通常商品
             |--------------------------------------------------------------------------
             */
 
@@ -149,6 +144,7 @@ class Order extends Model
                 $item->product &&
                 $item->product->is_stock_managed
             ) {
+
                 $product = Product::query()
                     ->lockForUpdate()
                     ->find($item->product->id);
@@ -157,25 +153,32 @@ class Order extends Model
                     continue;
                 }
 
-                $product->decrement(
-                    'stock',
-                    $qty
-                );
+                $product->decrement('stock', $qty);
             }
         }
     }
 
     /*
     |--------------------------------------------------------------------------
-    | アクセサ
+    | Accessor
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * 注文ステータス表示
+     */
     public function getStatusLabelAttribute(): string
     {
-        return self::statuses()[$this->status] ?? '不明';
+        if ($this->status instanceof OrderStatus) {
+            return $this->status->label();
+        }
+
+        return OrderStatus::from($this->status)->label();
     }
 
+    /**
+     * 支払い方法
+     */
     public function getPaymentMethodLabelAttribute(): string
     {
         return match ($this->payment_method) {
@@ -191,6 +194,9 @@ class Order extends Model
         };
     }
 
+    /**
+     * 決済状況
+     */
     public function getPaymentStatusLabelAttribute(): string
     {
         return match ($this->payment_status) {
@@ -208,16 +214,55 @@ class Order extends Model
         };
     }
 
-    public function getDeliveryMethodLabelAttribute(): string
+    /**
+     * 配送会社
+     */
+    public function getShippingCompanyLabelAttribute(): string
     {
-        return match ($this->delivery_method) {
+        return match ($this->shipping_company) {
 
-            'sagawa' => '佐川配送',
+        'sagawa' => '佐川急便',
 
-            'pickup' => '現地渡し',
+        'yamato' => 'ヤマト運輸',
 
-            default => $this->delivery_method,
+        'japan_post' => '日本郵便',
+
+        default => '-',
 
         };
     }
+
+    /**
+     * 配送追跡URL
+     */
+    public function getTrackingUrlAttribute(): ?string
+    {
+        if (
+            empty($this->tracking_number) ||
+	    empty($this->shipping_company)
+	) {
+	   return null;
+	}
+
+	return match ($this->shipping_company) {
+
+	    'sagawa'
+	        => 'https://k2k.sagawa-exp.co.jp/p/web/okurijoinput.jsp'
+	            . '?okurino='
+	            . urlencode($this->tracking_number),
+
+	    'yamato'
+	        => 'https://toi.kuronekoyamato.co.jp/cgi-bin/tneko'
+	            . '?number='
+	            . urlencode($this->tracking_number),
+
+	    'japan_post'
+	        => 'https://trackings.post.japanpost.jp/services/srv/search/direct'
+	            . '?reqCodeNo1='
+	            . urlencode($this->tracking_number),
+
+	    default => null,
+	};
+    }
+
 }

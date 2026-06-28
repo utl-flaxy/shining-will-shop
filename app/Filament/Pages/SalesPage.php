@@ -2,30 +2,54 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Order;
 use Filament\Pages\Page;
 
 class SalesPage extends Page
 {
-    // ✅ 管理パネル指定
     protected static ?string $panel = 'admin_shining';
 
-    // ✅ ナビゲーション設定
     protected static ?string $navigationIcon = 'heroicon-o-currency-yen';
+
     protected static ?string $navigationLabel = '売上一覧';
+
     protected static ?string $title = '売上一覧';
 
-    // ✅ 表示ビュー
     protected static string $view = 'filament.pages.sales-page';
 
-    // ✅ 売上データ（今は空配列）
-    public array $sales = [];
+    public int $totalSales = 0;
+
+    public int $todaySales = 0;
+
+    public int $monthlySales = 0;
+
+    public int $totalOrders = 0;
+
+    public $recentOrders = [];
 
     public function mount(): void
     {
-        /**
-         * ✅ 今は Square 未連携なので空データ
-         * ✅ 後から Square API に差し替えるだけでOKな構成
-         */
-        $this->sales = [];
+        $query = Order::query();
+
+        $this->totalSales = (int) $query->sum('total_amount');
+
+        $this->totalOrders = (int) $query->count();
+
+        $this->todaySales = (int) Order::whereDate(
+            'created_at',
+            today()
+        )->sum('total_amount');
+
+        $this->monthlySales = (int) Order::whereYear(
+            'created_at',
+            now()->year
+        )->whereMonth(
+            'created_at',
+            now()->month
+        )->sum('total_amount');
+
+        $this->recentOrders = Order::latest()
+            ->take(10)
+            ->get();
     }
 }

@@ -1,36 +1,29 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>プロフィール</title>
-</head>
-<body>
-<h1>プロフィール編集</h1>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Profile') }}
+        </h2>
+    </x-slot>
 
-@if (session('status') === 'profile-updated')
-    <p>プロフィールを更新しました。</p>
-@endif
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.update-profile-information-form')
+                </div>
+            </div>
 
-<form method="post" action="{{ route('profile.update') }}">
-    @csrf
-    @method('patch')
-    <label>名前:
-        <input type="text" name="name" value="{{ old('name', $user->name) }}">
-    </label><br>
-    <label>メール:
-        <input type="email" name="email" value="{{ old('email', $user->email) }}">
-    </label><br>
-    <button type="submit">保存</button>
-</form>
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.update-password-form')
+                </div>
+            </div>
 
-<form method="post" action="{{ route('profile.destroy') }}">
-    @csrf
-    @method('delete')
-    <label>パスワード:
-        <input type="password" name="password" required>
-    </label>
-    <button type="submit">アカウント削除</button>
-</form>
-
-</body>
-</html>
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div class="max-w-xl">
+                    @include('profile.partials.delete-user-form')
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

@@ -19,7 +19,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="APP_KEY" value="base64:SomeRandomKeyHere="/>
+        <env name="APP_KEY" value="base64:cjFti9e1SUC7dC4az0HsgXMEKR6e8SIk6z7F5TUc+sw="/>
         <env name="APP_DEBUG" value="true"/>
         <env name="APP_URL" value="http://localhost"/>
 

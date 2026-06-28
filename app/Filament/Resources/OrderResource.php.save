@@ -215,25 +215,7 @@ class OrderResource extends Resource
                 Tables\Columns\BadgeColumn::make('delivery_method')
                     ->label('配送方法'),
 
-		Tables\Columns\BadgeColumn::make('shipping_company')
-		    ->label('配送会社')
-		    ->formatStateUsing(fn (?string $state) => match ($state) {
 
-		        'sagawa' => '佐川急便',
-
-		        'yamato' => 'ヤマト運輸',
-
-		        'japan_post' => '日本郵便',
-
-		        default => '-',
-
-		    }),
-		Tables\Columns\TextColumn::make('tracking_number')
-		    ->label('送り状番号')
-		    ->copyable()
-		    ->copyMessage('送り状番号をコピーしました')
-		    ->placeholder('-')
-		    ->toggleable(),
 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('注文ステータス')
@@ -245,21 +227,6 @@ class OrderResource extends Resource
                         'success' => OrderStatus::Completed->value,
                         'danger' => OrderStatus::Cancelled->value,
                     ]),
-
-		Tables\Columns\TextColumn::make('tracking_url')
-		    ->label('追跡')
-
-		    ->state(fn (?Order $record) =>
-		        $record?->tracking_url ? '🔗 追跡' : '-'
-		    )
-
-		    ->url(fn (?Order $record) =>
-		        $record?->tracking_url
-		    )
-
-		    ->openUrlInNewTab()
-
-		    ->color('primary'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('注文日時')

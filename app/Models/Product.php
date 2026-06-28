@@ -19,6 +19,10 @@ class Product extends Model
         'is_stock_managed',
     ];
 
+    protected $appends = [
+        'main_image_url',
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | リレーション
@@ -42,7 +46,26 @@ class Product extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | 販売状態
+    | アクセサ
+    |--------------------------------------------------------------------------
+    */
+
+    public function getMainImageUrlAttribute(): string
+    {
+        $image = $this->images()
+            ->orderBy('sort_order')
+            ->first();
+
+        if (! $image) {
+            return asset('images/no-image.png');
+        }
+
+        return asset('storage/' . ltrim($image->url, '/'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 在庫
     |--------------------------------------------------------------------------
     */
 
@@ -53,31 +76,13 @@ class Product extends Model
 
     public function totalStock(): int
     {
-        /*
-        |--------------------------------------------------------------------------
-        | 在庫管理しない商品
-        |--------------------------------------------------------------------------
-        */
-
         if (! $this->is_stock_managed) {
             return 999999;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | メンバー別在庫
-        |--------------------------------------------------------------------------
-        */
-
         if ($this->variants()->exists()) {
             return (int) $this->variants()->sum('stock');
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | 通常在庫
-        |--------------------------------------------------------------------------
-        */
 
         return (int) $this->stock;
     }
@@ -92,7 +97,10 @@ class Product extends Model
             return false;
         }
 
-        if ($this->is_stock_managed && $this->isSoldOut()) {
+        if (
+            $this->is_stock_managed &&
+            $this->isSoldOut()
+        ) {
             return false;
         }
 
@@ -101,12 +109,12 @@ class Product extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Query Scope
+    | Scope
     |--------------------------------------------------------------------------
     */
 
     /**
-     * 公開中のみ
+     * 公開商品
      */
     public function scopePublished(Builder $query): Builder
     {
@@ -127,10 +135,25 @@ class Product extends Model
             return $query;
         }
 
-        return $query->where(function ($q) use ($keyword) {
+        return $query->where(function (Builder $query) use ($keyword) {
 
-            $q->where('name', 'like', "%{$keyword}%")
-              ->orWhere('description', 'like', "%{$keyword}%");
+            $query
+
+                ->where('name', 'like', "%{$keyword}%")
+
+                ->orWhere('description', 'like', "%{$keyword}%")
+
+                ->orWhere('sku', 'like', "%{$keyword}%")
+
+                ->orWhereHas('category', function (Builder $query) use ($keyword) {
+
+                    $query->where(
+                        'name',
+                        'like',
+                        "%{$keyword}%"
+                    );
+
+                });
 
         });
     }
@@ -171,6 +194,9 @@ class Product extends Model
 
             'name'
                 => $query->orderBy('name'),
+
+            'oldest'
+                => $query->oldest(),
 
             default
                 => $query->latest(),

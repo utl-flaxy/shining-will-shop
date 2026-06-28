@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MyPageController;
+use App\Http\Controllers\MyPageOrderController;
 
 // =========================
 // 🏪 フロント（ショップ側）
@@ -30,40 +33,75 @@ use App\Http\Controllers\Admin\OrderExportController;
 |--------------------------------------------------------------------------
 */
 
-// ✅ スマホ特化トップ（新UI）
+// トップページ
 Route::get('/', [StoreController::class, 'home'])->name('store.home');
 
-// ✅ 商品一覧
+// 商品一覧
 Route::get('/store', [StoreController::class, 'index'])->name('store.index');
 
-// ✅ 商品詳細
+// 商品詳細
 Route::get('/products/{product}', [ProductController::class, 'show'])
     ->name('products.show');
 
-// ✅ カテゴリ別商品一覧
-Route::get('/categories/{id}', [StoreController::class, 'category'])
+// カテゴリ一覧
+Route::get('/categories/{category}', [StoreController::class, 'category'])
     ->name('store.categories');
 
-// =========================
-// 🛒 カート
-// =========================
+/*
+|--------------------------------------------------------------------------
+| 🛒 カート
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 
-// =========================
-// 💳 チェックアウト（0円テスト決済 & 本番共通）
-// ✅ ここは App\Http\Controllers\CheckoutController のみ使用
-// =========================
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout/start', [CheckoutController::class, 'start'])->name('checkout.start');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])
+    ->name('cart.add');
 
-// =========================
-// 💳 Square 本番決済専用（※今回は0円テストでは使用しない）
-// =========================
+Route::post('/cart/update', [CartController::class, 'update'])
+    ->name('cart.update');
+
+Route::post('/cart/remove', [CartController::class, 'remove'])
+    ->name('cart.remove');
+
+/*
+|--------------------------------------------------------------------------
+| 💳 チェックアウト
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->name('checkout.index');
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout.index');
+
+    Route::middleware('auth')->group(function () {
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout.index');
+
+    Route::post('/checkout/start', [CheckoutController::class, 'start'])
+        ->name('checkout.start');
+
+    });
+
+});
+
+Route::get('/checkout/success', [CheckoutController::class, 'success'])
+    ->name('checkout.success');
+
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])
+    ->name('checkout.cancel');
+
+/*
+|--------------------------------------------------------------------------
+| 💳 Square
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/square/checkout', [SquareCheckoutController::class, 'checkout'])
     ->name('square.checkout');
 
@@ -75,28 +113,18 @@ Route::get('/square/cancel', [SquareCheckoutController::class, 'cancel'])
 
 /*
 |--------------------------------------------------------------------------
-| 🔐 /owner 管理画面（完全自作）
+| 🔐 オーナー管理画面
 |--------------------------------------------------------------------------
 */
 
 Route::prefix('owner')->name('owner.')->group(function () {
 
-    /*
-    |-------------------------
-    | ✅ ログイン（★ミドルウェア絶対につけない）
-    |-------------------------
-    */
     Route::get('/login', [OwnerAuthController::class, 'showLoginForm'])
         ->name('login');
 
     Route::post('/login', [OwnerAuthController::class, 'login'])
         ->name('login.post');
 
-    /*
-    |-------------------------
-    | ✅ ログイン後のみアクセス可
-    |-------------------------
-    */
     Route::middleware('owner.auth')->group(function () {
 
         Route::post('/logout', [OwnerAuthController::class, 'logout'])
@@ -138,13 +166,60 @@ Route::prefix('owner')->name('owner.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ✅ CSVエクスポート（Filament & 直URL 共通）
+| 📄 CSV Export
 |--------------------------------------------------------------------------
-| URL: http://127.0.0.1/admin/orders/export/csv
-| ルート名: admin.orders.export.csv
 */
 
 Route::get(
     '/admin/orders/export/csv',
     [OrderExportController::class, 'exportCsv']
 )->name('admin.orders.export.csv');
+
+/*
+|--------------------------------------------------------------------------
+| 👤 会員機能
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    // マイページ
+    Route::get('/mypage', [MyPageController::class, 'index'])
+        ->name('mypage');
+
+    // 注文履歴一覧
+    Route::get('/mypage/orders', [MyPageOrderController::class, 'index'])
+        ->name('mypage.orders');
+
+    // 注文詳細
+    Route::get('/mypage/orders/{order}', [MyPageOrderController::class, 'show'])
+        ->name('mypage.orders.show');
+
+    // プロフィール
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/dashboard', function () {
+    return redirect()->route('mypage');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Breeze Auth
+|--------------------------------------------------------------------------
+*/
+
+require __DIR__ . '/auth.php';

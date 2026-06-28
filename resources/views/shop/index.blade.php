@@ -122,7 +122,7 @@ use Illuminate\Support\Facades\Storage;
     @if($products->isEmpty())
 
         <div class="rounded border bg-white p-10 text-center text-gray-500">
-            該当する商品はありません。
+            該当する商品が見つかりませんでした
         </div>
 
     @else
@@ -136,7 +136,7 @@ use Illuminate\Support\Facades\Storage;
                     $image = $product->images->first();
 
                     $imageUrl = $image
-                        ? Storage::url($image->url)
+                        ? asset('storage/' . ltrim($image->url, '/'))
                         : asset('images/no-image.png');
 
                     $isSoldOut = $product->isSoldOut();

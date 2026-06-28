@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Log;
+use App\Models\Order;
+use App\Observers\OrderObserver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,14 +15,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        /**
-         * ✅ コンソール実行時は Request が未バインドのことがあるので、
-         *    APP_URL を使ってダミー Request を束縛しておく。
-         *    これで UrlGenerator::__construct の $request=null 問題を回避。
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | CLI実行時のダミーRequest
+        |--------------------------------------------------------------------------
+        */
+
         if ($this->app->runningInConsole() && ! $this->app->bound('request')) {
+
             $url = config('app.url') ?? env('APP_URL', 'http://localhost');
-            $this->app->instance('request', Request::create($url));
+
+            $this->app->instance(
+                'request',
+                Request::create($url)
+            );
         }
     }
 
@@ -29,14 +37,35 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ✅ CLI 実行時はここは何もしない
+        /*
+        |--------------------------------------------------------------------------
+        | Observer登録
+        |--------------------------------------------------------------------------
+        */
+
+        Order::observe(OrderObserver::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLIではStripe確認しない
+        |--------------------------------------------------------------------------
+        */
+
         if ($this->app->runningInConsole()) {
             return;
         }
 
-        // Stripe キー確認は本番/ステージングのみ（任意）
+        /*
+        |--------------------------------------------------------------------------
+        | Stripe設定確認
+        |--------------------------------------------------------------------------
+        */
+
         if ($this->app->environment(['production', 'staging'])) {
-            $secret = config('services.stripe.secret') ?: env('STRIPE_SECRET');
+
+            $secret = config('services.stripe.secret')
+                ?: env('STRIPE_SECRET');
+
             if (empty($secret)) {
                 Log::error('⚠ STRIPE_SECRET is not configured.');
             }
