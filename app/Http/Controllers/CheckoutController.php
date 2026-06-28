@@ -127,7 +127,7 @@ class CheckoutController extends Controller
 
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
-                'status'         => 'paid',
+                'status'         => Order::STATUS_PENDING,
                 'note_to_talent' => $request->note_to_talent ?? null,
             ]);
 

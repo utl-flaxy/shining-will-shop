@@ -1,3 +1,7 @@
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @extends('layouts.app')
 
 @section('title', $product->name)
@@ -14,7 +18,7 @@
                 <div class="swiper-wrapper">
                     @forelse($product->images as $image)
                         <div class="swiper-slide flex items-center justify-center">
-                            <img src="{{ asset('storage/' . $image->url) }}"
+                            <img src="{{ Storage::url($image->url) }}"
                                  class="w-full max-h-[720px] object-contain">
                         </div>
                     @empty

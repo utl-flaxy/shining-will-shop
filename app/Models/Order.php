@@ -4,10 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Product;
+use App\Models\ProductVariant;
 
 class Order extends Model
 {
     use HasFactory;
+
+    /*
+    |--------------------------------------------------------------------------
+    | 注文ステータス
+    |--------------------------------------------------------------------------
+    */
+
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_PREPARING = 'preparing';
+    public const STATUS_SHIPPED = 'shipped';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_PENDING => '受付',
+            self::STATUS_PREPARING => '発送準備中',
+            self::STATUS_SHIPPED => '発送済み',
+            self::STATUS_COMPLETED => '配送完了',
+            self::STATUS_CANCELLED => 'キャンセル',
+        ];
+    }
 
     protected $fillable = [
         'order_number',
@@ -22,13 +47,13 @@ class Order extends Model
         'shipping_fee',
         'total_amount',
 
-        'status', // pending / paid / shipped / refunded
+        'status',
 
         'tracking_number',
         'shipped_at',
 
-        'payment_method',   // card / bank_transfer / on_site
-        'payment_status',   // unpaid / paid / refunded / failed
+        'payment_method',
+        'payment_status',
         'paid_at',
         'bank_deposit_confirmed_at',
 
@@ -46,126 +71,153 @@ class Order extends Model
         'refunded_at'               => 'datetime',
     ];
 
-    /* ============================
-        ✅ リレーション
-    ============================ */
+    /*
+    |--------------------------------------------------------------------------
+    | リレーション
+    |--------------------------------------------------------------------------
+    */
 
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    // orderItems という名前でも同じもの（CSVなど互換用）
     public function orderItems()
     {
         return $this->items();
     }
+    /*
+    |--------------------------------------------------------------------------
+    | 在庫減算
+    |--------------------------------------------------------------------------
+    */
 
-    /* ============================
-        ✅ 在庫連動メソッド
-    ============================ */
-
-    /**
-     * この注文分だけ在庫を減らす
-     *
-     * - product_variant_id がある場合 → バリアント在庫を優先して減算
-     * - なければ manage_stock=true の Product の stock を減算
-     */
     public function decreaseStock(): void
     {
-        $this->loadMissing(['items.variant', 'items.product']);
+        $this->loadMissing([
+            'items.variant',
+            'items.product',
+        ]);
 
         foreach ($this->items as $item) {
+
             $qty = (int) $item->quantity;
+
             if ($qty <= 0) {
                 continue;
             }
 
-            // ① バリアント在庫（メンバー別）を減らす
-            if ($item->variant) {
-                $variant  = $item->variant;
-                $newStock = max(0, (int) $variant->stock - $qty);
+            /*
+            |--------------------------------------------------------------------------
+            | メンバー別在庫
+            |--------------------------------------------------------------------------
+            */
 
-                $variant->update(['stock' => $newStock]);
+            if ($item->variant) {
+
+                $variant = ProductVariant::query()
+                    ->lockForUpdate()
+                    ->find($item->variant->id);
+
+                if (! $variant) {
+                    throw new \RuntimeException(
+                        '商品バリアントが存在しません。'
+                    );
+                }
+
+                if ($variant->stock < $qty) {
+                    throw new \RuntimeException(
+                        "{$item->product_name} の在庫が不足しています。"
+                    );
+                }
+
+                $variant->decrement(
+                    'stock',
+                    $qty
+                );
+
                 continue;
             }
 
-            // ② バリアントが無い場合は商品在庫を減らす
-            if ($item->product && $item->product->manage_stock) {
-                $product  = $item->product;
-                $newStock = max(0, (int) $product->stock - $qty);
+            /*
+            |--------------------------------------------------------------------------
+            | 通常商品の在庫
+            |--------------------------------------------------------------------------
+            */
 
-                $product->update(['stock' => $newStock]);
+            if (
+                $item->product &&
+                $item->product->is_stock_managed
+            ) {
+                $product = Product::query()
+                    ->lockForUpdate()
+                    ->find($item->product->id);
+
+                if (! $product) {
+                    continue;
+                }
+
+                $product->decrement(
+                    'stock',
+                    $qty
+                );
             }
         }
     }
 
-    /**
-     * キャンセルや全額返金で在庫を戻したいとき用（将来拡張）
-     */
-    public function restoreStock(): void
-    {
-        $this->loadMissing(['items.variant', 'items.product']);
-
-        foreach ($this->items as $item) {
-            $qty = (int) $item->quantity;
-            if ($qty <= 0) {
-                continue;
-            }
-
-            if ($item->variant) {
-                $item->variant->increment('stock', $qty);
-                continue;
-            }
-
-            if ($item->product && $item->product->manage_stock) {
-                $item->product->increment('stock', $qty);
-            }
-        }
-    }
-
-    /* ============================
-        ✅ 日本語ラベル系
-    ============================ */
+    /*
+    |--------------------------------------------------------------------------
+    | アクセサ
+    |--------------------------------------------------------------------------
+    */
 
     public function getStatusLabelAttribute(): string
     {
-        return match ($this->status) {
-            'pending'  => '入金待ち',
-            'paid'     => '入金確認',
-            'shipped'  => '発送済み',
-            'refunded' => '返金済み',
-            default    => '不明',
-        };
+        return self::statuses()[$this->status] ?? '不明';
     }
 
     public function getPaymentMethodLabelAttribute(): string
     {
         return match ($this->payment_method) {
-            'card'          => 'クレジットカード',
+
+            'card' => 'クレジットカード',
+
             'bank_transfer' => '口座振込',
-            'on_site'       => '現地払い',
-            default         => $this->payment_method,
+
+            'on_site' => '現地払い',
+
+            default => $this->payment_method,
+
         };
     }
 
     public function getPaymentStatusLabelAttribute(): string
     {
         return match ($this->payment_status) {
-            'unpaid'   => '未入金',
-            'paid'     => '入金済み',
+
+            'unpaid' => '未入金',
+
+            'paid' => '入金済み',
+
             'refunded' => '返金済み',
-            'failed'   => '決済エラー',
-            default    => $this->payment_status,
+
+            'failed' => '決済エラー',
+
+            default => $this->payment_status,
+
         };
     }
 
     public function getDeliveryMethodLabelAttribute(): string
     {
         return match ($this->delivery_method) {
+
             'sagawa' => '佐川配送',
-            'pickup' => '現場渡し',
-            default  => $this->delivery_method,
+
+            'pickup' => '現地渡し',
+
+            default => $this->delivery_method,
+
         };
     }
 }

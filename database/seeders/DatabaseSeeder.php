@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Seeded test product',
                 'price' => 1000,
                 'stock' => 100,
-                'images' => null,
                 'is_published' => true,
             ]
         );

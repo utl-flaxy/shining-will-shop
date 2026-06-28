@@ -9,7 +9,7 @@
             default-src 'self';
             script-src 'self' 'unsafe-inline' https://sandbox.web.squarecdn.com https://web.squarecdn.com https://cdn.jsdelivr.net;
             style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-            img-src 'self' data:;
+            img-src 'self' data: https://shining-will-shop-images.s3.ap-northeast-1.amazonaws.com;
             connect-src 'self' https://sandbox.web.squarecdn.com https://web.squarecdn.com;
             frame-src https://sandbox.web.squarecdn.com https://web.squarecdn.com;
           ">

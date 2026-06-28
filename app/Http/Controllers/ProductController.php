@@ -8,7 +8,8 @@ class ProductController extends Controller
 {
     public function show(Product $product)
     {
-        if (! $product->isAvailableForSale()) {
+        // 非公開・無効商品のみ404
+        if (! $product->is_active || ! $product->is_published) {
             abort(404);
         }
 
