@@ -1,548 +1,832 @@
-# Shining Will Shop
+# 🛍️ Shining Will Shop
 
-> **Laravel 11で開発した、実務を意識したECサイトポートフォリオ**
+Laravel 11で開発した、アイドル・アーティスト向けのECサイトです。
 
-![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel\&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php\&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql\&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws\&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker\&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions\&logoColor=white)
-![PHPUnit](https://img.shields.io/badge/Test-PHPUnit-366488)
-![Filament](https://img.shields.io/badge/Admin-Filament-v3-8A2BE2)
+商品販売だけではなく、
 
----
+- 認証
+- 商品管理
+- 在庫管理
+- 注文管理
+- 管理画面
+- 自動テスト
+- CI（GitHub Actions）
 
-# Demo
+まで含め、実務で運用されるWebアプリケーションを意識して設計・実装しました。
 
-| Item   | URL                                            |
-| ------ | ---------------------------------------------- |
-| Demo   | https://shining-will-shop.com                  |
-| GitHub | https://github.com/utl-flaxy/shining-will-shop |
+本プロジェクトでは、「動くものを作ること」ではなく、
 
----
+**保守性・拡張性・品質を意識した設計**
 
-# Screenshots
-
-> トップページ・商品一覧・商品詳細・カート・注文画面・管理画面などのスクリーンショットを掲載予定
+をテーマに開発しています。
 
 ---
 
-# Overview
+# デモ
 
-Shining Will Shop は、Laravel 11 を用いて開発したECサイトです。
+🌐 本番環境
 
-一般的な商品販売サイトとしての機能だけではなく、
-
-* 商品検索
-* カート
-* 注文処理
-* 在庫管理
-* マイページ
-* 管理画面
-* 自動テスト
-* CI（GitHub Actions）
-
-まで実装し、実務を意識した構成で開発しました。
-
-本プロジェクトでは「機能数」よりも、
-
-* 保守性
-* 拡張性
-* 可読性
-* 品質
-
-を重視しています。
+https://shining-will-shop.com
 
 ---
 
-# Why This Project?
+# GitHub
 
-Laravelの基本的なCRUDだけではなく、
+https://github.com/utl-flaxy/shining-will-shop
 
-実際のWebアプリケーション開発で必要になる
+---
 
-* 認証
-* 注文フロー
-* 在庫管理
-* 管理画面
-* テスト
-* CI/CD
+# 使用技術
 
-まで一貫して経験することを目的として制作しました。
+| 分類 | 技術 |
+|------|------|
+| Backend | Laravel 11 / PHP 8.3 |
+| Frontend | Blade / Vite / Tailwind CSS |
+| Database | MySQL |
+| Admin | Filament v3 |
+| Testing | PHPUnit Feature Test |
+| CI | GitHub Actions |
+| Development | Docker |
+| Infrastructure | AWS EC2 |
+
+---
+
+# プロジェクト概要
+
+このアプリケーションでは、
+
+一般的なECサイトの機能だけではなく、
+
+- 商品検索
+- カート
+- 注文
+- 在庫管理
+- 会員認証
+- 注文履歴
+- 管理画面
+
+までを一つのシステムとして実装しています。
 
 また、
 
-**「あとから機能追加しやすい設計」**
+開発時から
 
-を目標とし、
+- 自動テスト
+- CI
+- 保守性
 
-Controllerへロジックを集中させず、
+を意識し、
 
-Model・Eloquent・Laravel標準機能を活用した構成を採用しています。
-
----
-
-# Design Principles
-
-このプロジェクトでは以下の方針で設計しました。
-
-* Laravel標準機能を積極的に利用する
-* Fat Controllerを避ける
-* ビジネスロジックをModelへ集約する
-* Query Scopeを活用して検索処理を共通化する
-* 保守性・拡張性を優先する
-* 自動テストを前提とした設計にする
-
-これにより、新しい機能追加や仕様変更にも対応しやすい構成を目指しました。
+継続的に改善しやすい構成を採用しています。
 
 ---
 
-# Tech Stack
+# システム全体像
 
-## Backend
+以下の3つの図を見ることで、
 
-* PHP 8.3
-* Laravel 11
-* Eloquent ORM
-* Laravel Breeze
-* Laravel Mail
+システム全体の構成を把握できます。
 
-## Frontend
+## AWS構成図
 
-* Blade
-* Tailwind CSS
-* Vite
-* JavaScript
-
-## Database
-
-* MySQL
-* SQLite（Testing）
-
-## Infrastructure
-
-* AWS EC2
-* Docker Compose
-
-## Admin
-
-* Filament v3
-
-## Quality
-
-* PHPUnit
-* GitHub Actions
-* RefreshDatabase
+> （ここに画像を配置）
 
 ---
 
-# Main Features
+## ER図
 
-## Customer
-
-* 商品一覧
-* 商品検索
-* カテゴリ検索
-* 並び替え
-* 商品詳細
-* カート
-* 数量変更
-* 注文確認
-* 注文完了
-* マイページ
-* 注文履歴
+> （ここに画像を配置）
 
 ---
 
-## Administrator
+## 注文フロー図
 
-* Dashboard
-* 商品管理
-* カテゴリ管理
-* 注文管理
-* ユーザー管理
-* 配送情報管理
+> （ここに画像を配置）
 
 ---
 
-## Quality
+# このプロジェクトで重視したこと
 
-* Feature Test
-* GitHub Actions
-* SQLite Testing
-* CIによる自動テスト
+このプロジェクトでは、機能数を増やすことよりも、
+
+次の4点を重視しました。
+
+- 保守しやすい設計
+- Laravel標準機能を活用した実装
+- 自動テストによる品質保証
+- 継続的に改善できる開発体制
+
+実際の開発でも、
+
+「実装」だけではなく、
+
+「運用・改善」
+
+まで見据えた設計を意識しています。
 
 ---
 
-# Project Goals
+# READMEの見どころ
 
-このプロジェクトでは、次の点を特に重視しました。
+このREADMEでは、
 
-* Laravelらしい実装
-* 可読性の高いコード
-* 保守しやすい設計
-* 品質を維持する仕組み
-* 実務を意識した開発フロー
+以下の順番でプロジェクトを紹介します。
 
-単に動作するアプリケーションではなく、
+1. 開発背景
+2. 技術選定と採用理由
+3. アーキテクチャ
+4. 設計方針
+5. 主な機能
+6. 品質保証
+7. 設計レビュー
+8. 今後の改善点
 
-**「チーム開発でも保守しやすいコードを書くこと」**
+単なる機能紹介ではなく、
 
-を意識して制作しています。
+「なぜその設計にしたのか」
 
-# Architecture
+という意思決定も含めてまとめています。
 
-本アプリケーションは、Laravelの標準アーキテクチャをベースに設計しています。
+# 開発背景
+
+Laravelの学習ではCRUDアプリケーションを作る機会が多い一方で、
+
+実務では
+
+- 認証
+- 注文
+- 在庫管理
+- データ整合性
+- テスト
+- CI
+- 保守性
+
+まで考慮する必要があります。
+
+そこで本プロジェクトでは、
+
+「ECサイトを作ること」
+
+ではなく、
+
+**実務で継続的に運用できるWebアプリケーションを設計・実装すること**
+
+を目的として開発しました。
+
+そのため、
+
+機能追加だけではなく、
+
+- 責務分離
+- 可読性
+- 保守性
+- 品質保証
+
+まで含めて設計しています。
+
+---
+
+# 開発目的
+
+このプロジェクトでは次の3点を目標にしました。
+
+## ① Laravel標準機能を正しく使う
+
+実務では独自実装よりも、
+
+Laravel標準機能を活用することで保守性を高めるケースが多くあります。
+
+本プロジェクトでも、
+
+Laravelらしい設計を意識しました。
+
+---
+
+## ② 保守しやすい構成を作る
+
+機能追加よりも、
+
+数か月後の自分や他の開発者が
+
+理解しやすいコードを書くことを重視しました。
+
+そのため、
+
+Controllerへロジックを書きすぎず、
+
+責務を分離する設計を採用しています。
+
+---
+
+## ③ 品質を担保する
+
+Webアプリケーションでは
+
+実装だけでは品質は保証できません。
+
+そのため、
+
+Feature TestとGitHub Actionsを導入し、
+
+継続的に品質を確認できる構成にしています。
+
+---
+
+# 技術スタック
+
+| 分類 | 採用技術 |
+|------|-----------|
+| Backend | Laravel 11 |
+| Language | PHP 8.3 |
+| Frontend | Blade / Tailwind CSS / Vite |
+| Database | MySQL |
+| ORM | Eloquent ORM |
+| Authentication | Laravel Breeze |
+| Admin Panel | Filament v3 |
+| Testing | PHPUnit |
+| CI | GitHub Actions |
+| Development | Docker |
+| Infrastructure | AWS EC2 |
+
+---
+
+# 技術選定
+
+## Laravel
+
+Laravelは、
+
+ルーティング・認証・ORM・メール送信など、
+
+Webアプリケーション開発に必要な機能が充実しています。
+
+本プロジェクトでは、
+
+Laravel標準機能を活用することで、
+
+保守性と開発効率を両立しました。
+
+---
+
+## Filament
+
+管理画面にはFilamentを採用しました。
+
+Laravelとの親和性が高く、
+
+CRUDを短期間で構築できるため、
+
+業務ロジックの実装へ集中できます。
+
+---
+
+## MySQL
+
+本番環境を想定し、
+
+MySQLを利用しています。
+
+ローカル・本番で同じDBを利用することで、
+
+環境差異を減らしています。
+
+---
+
+## Docker
+
+Docker Composeで開発環境を構築しています。
+
+これにより、
+
+誰でも同じ環境で開発を開始できます。
+
+---
+
+## GitHub Actions
+
+Push・Pull Request時に
+
+自動でテストを実行しています。
+
+ローカル環境だけではなく、
+
+CIでも品質を確認できる体制を整えています。
+
+---
+
+# アーキテクチャ
+
+本プロジェクトでは、
+
+Laravel標準のMVCアーキテクチャを採用しています。
 
 ```text
 Request
-    │
-    ▼
+
+↓
+
 Route
-    │
-    ▼
+
+↓
+
 Controller
-    │
-    ▼
-Model (Business Logic)
-    │
-    ▼
+
+↓
+
+Model
+
+↓
+
 Database
+
+↓
+
+View
 ```
 
-Controllerはリクエスト処理と画面遷移のみを担当し、ビジネスロジックはModelへ集約しています。
+Controllerは、
+
+HTTPリクエストの受付と画面遷移のみを担当し、
+
+ビジネスロジックはModelへ集約しています。
 
 ---
 
-# Technical Decisions
+# 設計方針
 
-## Why Query Scope?
+開発では、
 
-商品検索では、
+次の方針を一貫して意識しました。
 
-* キーワード検索
-* カテゴリ検索
-* 並び替え
-* 公開商品のみ取得
+## Controllerを肥大化させない
 
-など複数条件を組み合わせています。
+Controllerには
 
-これらをControllerへ記述すると保守が難しくなるため、検索ロジックはModelのQuery Scopeへ集約しました。
+データ取得や画面遷移のみを記述し、
+
+複雑なロジックはModelへ集約しています。
+
+---
+
+## Laravel標準を優先する
+
+独自実装を増やすのではなく、
+
+Laravel標準機能を積極的に利用しました。
+
+これにより、
+
+学習コストを抑えながら、
+
+保守しやすい構成を実現しています。
+
+---
+
+## 可読性を重視する
+
+短いコードよりも、
+
+誰が読んでも理解できるコードを目指しました。
+
+命名や責務分離を意識し、
+
+将来的な機能追加にも対応しやすい設計としています。
+
+---
+
+## 品質を継続的に維持する
+
+Feature TestとGitHub Actionsを導入し、
+
+実装後も品質を継続的に確認できる環境を整えています。
+
+---
+
+# この後紹介する内容
+
+以降では、
+
+実装した機能だけではなく、
+
+設計時に工夫した点や品質保証への取り組みについて紹介します。
+
+# 設計レビュー
+
+本プロジェクトでは、
+
+「まず動くものを作る」
+
+ではなく、
+
+**保守しやすく、継続的に改善できる設計**
+
+を目標としました。
+
+そのため、Laravel標準機能を活用しながら、
+
+責務を明確に分離することを意識しています。
+
+---
+
+# Controllerを薄くする
+
+Controllerでは、
+
+- リクエスト受付
+- バリデーション
+- Viewへの受け渡し
+
+のみを担当しています。
+
+ビジネスロジックはできる限りModelへ集約しました。
+
+```text
+Request
+
+↓
+
+Controller
+
+↓
+
+Model
+
+↓
+
+Database
+```
+
+Controllerが肥大化すると、
+
+修正箇所が増え、
+
+テストもしづらくなります。
+
+そのため、
+
+Controllerには処理を書きすぎないようにしています。
+
+---
+
+# Query Scopeによる検索処理
+
+商品検索では
+
+- キーワード
+- カテゴリー
+- 最低価格
+- 最高価格
+- 並び替え
+
+など複数条件があります。
+
+これらをControllerへ書くと、
+
+可読性・再利用性が低下します。
+
+そのため、
+
+検索ロジックはQuery Scopeへ集約しました。
 
 ```php
 Product::query()
     ->published()
     ->keyword($keyword)
     ->category($category)
+    ->priceRange($min, $max)
     ->sort($sort)
     ->paginate(12);
 ```
 
-### Benefits
+### この設計にした理由
 
-* Controllerをシンプルに保てる
-* 検索条件の追加が容易
-* テストしやすい
-* 再利用しやすい
+検索条件を追加する場合でも、
 
----
+Controllerを変更する必要がありません。
 
-## Why Business Logic in Model?
+Modelだけで完結するため、
 
-販売可能かどうかの判定はControllerではなくProduct Modelへ実装しています。
-
-```php
-$product->isAvailableForSale();
-```
-
-在庫数取得
-
-```php
-$product->totalStock();
-```
-
-売り切れ判定
-
-```php
-$product->isSoldOut();
-```
-
-### Benefits
-
-販売ロジックを1箇所へ集約することで、
-
-複数画面から同じ判定を利用できます。
+保守性が向上します。
 
 ---
 
-## Why Eloquent Relationship?
+# Eloquent Relationship
 
-SQLを直接記述する代わりに、
+SQLを直接記述するのではなく、
 
 Laravel標準のRelationshipを利用しています。
 
 ```text
 Category
-    │
-    └──── Product
-              │
-              └──── ProductImage
+
+↓
+
+Products
+
+↓
+
+ProductImages
 ```
 
 注文では
 
 ```text
 Order
-    │
-    └──── OrderItem
-                 │
-                 └──── Product
+
+↓
+
+OrderItems
+
+↓
+
+Product
 ```
 
-### Benefits
+と関連付けています。
 
-* 可読性向上
-* N+1問題を回避しやすい
-* Laravelらしい実装
+### この設計にした理由
+
+- コードが読みやすい
+- Eager Loadingを利用しやすい
+- Laravel標準に沿った設計になる
+
+ためです。
 
 ---
 
-## Why Session Cart?
-
-今回はログイン不要でも利用できるECサイトを想定したため、
+# Session Cart
 
 カートはSessionで管理しています。
 
-### Trade-off
+### メリット
 
-**メリット**
+- 実装がシンプル
+- ゲスト購入へ対応しやすい
+- DBアクセスを減らせる
 
-* 実装がシンプル
-* ゲスト購入に対応しやすい
+### デメリット
 
-**デメリット**
+- 複数端末で同期できない
+- ログイン後も引き継ぎ処理が必要
 
-* デバイス間同期はできない
+今回は
 
-実運用ではRedisやデータベース管理も検討できますが、本ポートフォリオではシンプルさを優先しました。
+ポートフォリオとして
 
----
+シンプルさを優先しました。
 
-## Why Filament?
-
-管理画面はFilament v3を採用しました。
-
-理由
-
-* Laravelとの親和性
-* CRUDを高速に構築できる
-* カスタマイズ性が高い
-
-Filamentを利用することで、業務ロジックの実装に集中できる構成としました。
+実務ではRedisやDatabase管理も選択肢になります。
 
 ---
 
-# Database Design
+# 注文処理
 
-主要テーブル
+注文では
+
+Transactionを利用しています。
 
 ```text
-users
+注文作成
 
-categories
+↓
 
-products
+注文商品作成
 
-product_images
+↓
 
-orders
+在庫減算
 
-order_items
+↓
+
+メール送信
+
+↓
+
+コミット
 ```
 
-注文情報と商品情報を分離することで、
+途中で例外が発生した場合は、
 
-商品の価格変更後も注文時点の情報を保持できる設計としています。
+すべてロールバックします。
 
----
+### この設計にした理由
 
-# Design Trade-offs
+例えば
 
-設計時には以下の点を意識しました。
+注文だけ保存され、
 
-| 選択             | 理由          |
-| -------------- | ----------- |
-| Session Cart   | 実装のシンプルさを優先 |
-| Query Scope    | 検索ロジックの共通化  |
-| Eloquent       | 保守性・可読性を重視  |
-| Filament       | 管理画面を効率よく構築 |
-| SQLite Testing | テスト速度を向上    |
+在庫だけ減る
+
+という状態を防ぐためです。
+
+データ整合性を最優先にしています。
 
 ---
 
-# What I Optimized
+# UUID形式の注文番号
 
-本プロジェクトでは「動作すること」だけでなく、
+注文番号は
 
-* コードの読みやすさ
-* 修正しやすさ
-* テストしやすさ
+連番ではなく
+
+ランダム文字列を利用しています。
+
+例
+
+```text
+ORDER-20260628143015-AB12CD
+```
+
+### この設計にした理由
+
+- 推測されにくい
+- 一意性を確保しやすい
+
+ためです。
+
+---
+
+# Filamentを採用した理由
+
+管理画面にはFilamentを利用しました。
+
+理由は
+
+- Laravelとの親和性
+- CRUDを高速構築
+- カスタマイズしやすい
+
+ためです。
+
+その結果、
+
+管理画面の実装工数を削減し、
+
+業務ロジックへ集中できました。
+
+---
+
+# 責務分離
+
+本プロジェクトでは、
+
+責務を明確に分離しています。
+
+```text
+Controller
+
+HTTPリクエスト
+
+────────────
+
+Model
+
+ビジネスロジック
+
+────────────
+
+View
+
+画面表示
+
+────────────
+
+Migration
+
+DB定義
+```
+
+これにより、
+
+修正範囲を限定しやすく、
+
+機能追加もしやすい構成となっています。
+
+---
+
+# トレードオフ
+
+設計では
+
+「最適解」
+
+ではなく
+
+「現時点で最適」
+
+を選択しています。
+
+例えば
+
+Session Cartは
+
+Redisより高機能ではありません。
+
+しかし、
+
+今回の規模では
+
+実装コストと保守性のバランスを考え、
+
+Sessionを採用しました。
+
+プロジェクト規模が大きくなれば、
+
+Redisへの移行も検討できます。
+
+---
+
+# このプロジェクトで意識したこと
+
+私は、
+
+「デザインパターンを使うこと」
+
+ではなく、
+
+**プロジェクト規模に応じて適切な設計を選択すること**
 
 を重視しました。
 
-そのため、
+Laravel標準機能を活用しながら、
 
-* Fat Controllerを避ける
-* Laravel標準機能を活用する
-* ビジネスロジックを集約する
+過度な抽象化を避け、
 
-という設計方針を採用しています。
+読みやすく保守しやすいコードを目指しています。
 
-# Order Flow
+# 品質保証
 
-注文処理では、データ整合性を維持するために一連の処理をトランザクションとして実行しています。
+Webアプリケーションは、実装しただけでは品質を保証できません。
 
-```text
-Product Detail
-      │
-      ▼
-Add to Cart
-      │
-      ▼
-Checkout
-      │
-      ▼
-Create Order
-      │
-      ▼
-Create Order Items
-      │
-      ▼
-Decrease Stock
-      │
-      ▼
-Send Mail
-      │
-      ▼
-Complete
-```
+そのため本プロジェクトでは、
+
+「変更しても壊れない状態を維持すること」
+
+を目的として、
+
+自動テストとCIを導入しています。
 
 ---
 
-# Transaction
+# Feature Test
 
-注文処理では `DB::transaction()` を利用しています。
-
-```php
-DB::transaction(function () {
-
-    // 注文作成
-
-    // 注文明細作成
-
-    // 在庫減算
-
-    // メール送信
-
-});
-```
-
-## Why?
-
-注文途中でエラーが発生した場合でも、
-
-* 注文だけ保存される
-* 在庫だけ減少する
-
-といったデータ不整合を防ぐためです。
-
-データの整合性を優先し、処理全体を1つのトランザクションとして扱っています。
-
----
-
-# Inventory Management
-
-在庫管理はProduct Modelへ集約しています。
-
-利用している主なメソッド
-
-```php
-$product->isAvailableForSale();
-
-$product->isSoldOut();
-
-$product->totalStock();
-```
-
-販売可否判定をControllerへ分散させないことで、
-
-複数画面から同じロジックを利用できます。
-
----
-
-# Quality Assurance
-
-品質維持のため、
-
-Feature Testを実装しています。
+主要機能についてFeature Testを作成しています。
 
 現在実装済み
 
-* Authentication
-* Product Search
-* Cart
-* Checkout
-* Profile
+- 認証
+- 商品検索
+- カート
+- 注文処理
+- プロフィール
+
+実際のHTTPリクエストを通して、
+
+画面遷移からデータベース更新まで確認しています。
+
+---
+
+# テスト結果
+
+現在のテスト結果
 
 ```text
 48 Tests
 
 130 Assertions
 
-All Passed ✅
+All Passed
 ```
 
----
+Feature Testでは、
 
-# Why Feature Test?
+単体メソッドだけではなく、
 
-単体テストだけではなく、
-
-実際のHTTPリクエストを通した動作確認を重視しました。
-
-これにより
-
-* Routing
-* Authentication
-* Session
-* Database
-
-まで含めて確認できます。
+アプリケーション全体の動作を確認しています。
 
 ---
 
-# SQLite Testing
+# SQLiteを採用した理由
 
 テストではSQLiteを利用しています。
 
-```text
-APP_ENV=testing
+理由
 
-DB_CONNECTION=sqlite
-```
+- テスト速度が速い
+- 毎回クリーンなDBで開始できる
+- CI環境との相性が良い
 
-## Why?
+本番ではMySQL、
 
-* テスト実行速度が速い
-* 毎回クリーンなDBで開始できる
-* CIとの相性が良い
+テストではSQLiteを利用することで、
+
+実行速度と再現性を両立しています。
 
 ---
 
 # RefreshDatabase
 
-各テストでは
+各Feature Testでは
 
 ```php
 use RefreshDatabase;
@@ -552,361 +836,203 @@ use RefreshDatabase;
 
 これにより
 
-* テスト同士が影響しない
-* 再現性のあるテスト
+毎回Migrationが実行され、
 
-を実現しています。
+テスト同士が影響しません。
+
+テストの独立性を維持しています。
 
 ---
 
-# Continuous Integration
+# GitHub Actions
 
 GitHub Actionsを利用し、
 
-Push・Pull Request時に自動でテストを実行しています。
+Push・Pull Request時に
+
+自動でテストを実行しています。
+
+実行内容
 
 ```text
-Checkout Repository
+Repository Checkout
 
-      │
+↓
 
 Composer Install
 
-      │
+↓
 
-Generate APP_KEY
+Application Key生成
 
-      │
+↓
 
 Migration
 
-      │
+↓
 
 PHPUnit
 
-      │
+↓
 
 Success
 ```
 
-## Why?
+ローカル環境だけではなく、
 
-ローカル環境だけでなく、
-
-GitHub上でもテストを実行することで、
-
-環境差異による問題を早期に発見できるようにしています。
+GitHub上でも品質を確認できるようにしています。
 
 ---
 
-# Infrastructure
+# 品質に対する考え方
 
-本アプリケーションはAWS EC2へデプロイしています。
+このプロジェクトでは
 
-```text
-GitHub
+「動く」
 
-    │
+ことより
 
-GitHub Actions
+「安心して変更できる」
 
-    │
+ことを重視しています。
 
-AWS EC2
+機能追加やリファクタリングを行っても、
 
-    │
+既存機能が壊れていないことを
 
-Docker
-
-    │
-
-Laravel
-
-    │
-
-MySQL
-```
+テストによって確認できる状態を目指しました。
 
 ---
 
-# Development Environment
+# 今後改善したいこと
 
-ローカル環境はDocker Composeで構築しています。
+今後は
 
-主な構成
+## 決済
 
-* PHP 8.3
-* Laravel 11
-* MySQL
-* Node.js
-* Vite
-
-環境構築手順を統一することで、
-
-開発環境の再現性を高めています。
+- Square決済
+- Webhook対応
 
 ---
 
-# Project Highlights
+## インフラ
 
-このプロジェクトで特に注力した点
-
-* Laravel標準機能を活用した設計
-* Query Scopeによる検索処理の共通化
-* Transactionによる注文処理
-* Eloquent Relationshipを利用したデータ設計
-* PHPUnitによるFeature Test
-* GitHub ActionsによるCI
-* Dockerを利用した開発環境
-* AWS EC2へのデプロイ
-
-単に機能を実装するだけではなく、
-
-「変更しやすく、継続的に改善できる構成」
-
-を意識して設計しました。
-
-# Local Development
-
-## Requirements
-
-* PHP 8.3
-* Composer
-* Node.js
-* Docker
-* MySQL
+- CloudFront
+- S3配信最適化
+- キャッシュ改善
 
 ---
 
-## Installation
+## EC機能
 
-Clone the repository.
-
-```bash
-git clone https://github.com/utl-flaxy/shining-will-shop.git
-
-cd shining-will-shop
-```
-
-Install dependencies.
-
-```bash
-composer install
-
-npm install
-```
-
-Copy the environment file.
-
-```bash
-cp .env.example .env
-```
-
-Generate the application key.
-
-```bash
-php artisan key:generate
-```
-
-Run the migrations.
-
-```bash
-php artisan migrate
-```
-
-Create the storage symlink.
-
-```bash
-php artisan storage:link
-```
-
-Start the frontend development server.
-
-```bash
-npm run dev
-```
-
-Launch the application.
-
-```bash
-php artisan serve
-```
+- 商品レビュー
+- お気に入り
+- クーポン
+- ポイント
 
 ---
 
-# Future Improvements
+## システム
 
-今後は以下の機能追加を予定しています。
-
-## Payment
-
-* Square決済対応
-* Webhook対応
-* 決済履歴管理
+- PWA対応
+- 通知機能
+- 多言語対応
 
 ---
 
-## Shopping Experience
-
-* お気に入り機能
-* 商品レビュー
-* レコメンド
-* クーポン
-* ポイント
-
----
-
-## Infrastructure
-
-* CloudFront
-* S3画像配信
-* キャッシュ最適化
-
----
-
-## Application
-
-* PWA対応
-* 多言語対応
-* 通知機能
-
----
-
-# Lessons Learned
+# このプロジェクトで学んだこと
 
 このプロジェクトを通して、
 
-Laravelの基本機能だけではなく、
+LaravelでWebアプリケーションを開発するだけではなく、
 
-実際のWebアプリケーション開発では
+設計・品質・保守性について考える重要性を学びました。
 
-設計・品質・運用まで考えることが重要であると学びました。
+特に、
 
-特に印象的だったのは、
+- Controllerへロジックを書きすぎないこと
+- データ整合性を保つこと
+- テストを書くこと
+- 継続的に品質を維持すること
 
-* Controllerへロジックを書きすぎないこと
-* データ整合性を保つこと
-* 自動テストを書くこと
-* CIを整備すること
+の重要性を実感しました。
 
-です。
+---
 
-また、
+# 振り返り
+
+開発当初は、
 
 「まず動くものを作る」
 
-だけではなく、
+ことを優先していました。
 
-「変更しやすい設計」
+しかし実装を進めるにつれて、
 
-を意識するようになりました。
+コード量が増えるほど
 
----
+設計や責務分離の重要性を強く感じました。
 
-# What I Would Improve
+そのため途中から、
 
-もし本プロジェクトをさらに発展させる場合は、
+Controller・Model・Viewの責務を見直し、
 
-以下の改善を検討しています。
+検索処理や販売判定をModelへ集約するなど、
 
-* Service Layerの導入
-* Repository Patternの採用可否検討
-* キャッシュ戦略の見直し
-* API化への対応
-* フロントエンドのSPA化
-* パフォーマンス計測と改善
+保守しやすい構成へ改善しています。
 
-現時点では、Laravel標準機能を活かしたシンプルな構成を優先していますが、プロジェクト規模に応じて設計を見直す余地があると考えています。
+また、
 
----
+GitHub ActionsやFeature Testを導入したことで、
 
-# Repository Structure
+実装だけではなく、
 
-```text
-app/
-├── Http/
-├── Models/
-├── Mail/
-├── Filament/
-
-database/
-├── migrations/
-├── seeders/
-
-resources/
-├── views/
-├── css/
-├── js/
-
-routes/
-
-tests/
-├── Feature/
-└── Unit/
-
-.github/
-└── workflows/
-```
+品質を維持しながら開発を進める重要性も学ぶことができました。
 
 ---
 
-# Key Takeaways
+# 今後の課題
 
-このプロジェクトでは、
+現在の構成は、
 
-Laravelを利用したECサイト開発だけではなく、
+Laravel標準機能を活用したシンプルな設計を採用しています。
 
-* 設計
-* テスト
-* CI
-* インフラ
-* 運用
+一方で、
 
-まで含めた一連の開発を経験しました。
+プロジェクトがさらに大規模になった場合には、
 
-特に以下の点を意識しています。
+- Service Layer
+- Repository Pattern
+- 非同期ジョブ
+- キャッシュ戦略
 
-* Laravel標準機能を活用した設計
-* 保守性・可読性を重視した実装
-* Feature Testによる品質担保
-* GitHub Actionsによる継続的インテグレーション
-* Dockerによる再現性のある開発環境
-* AWS EC2へのデプロイ
+などの導入も検討できると考えています。
 
----
+現時点では、
 
-# About This Portfolio
+過度な抽象化を避け、
 
-このポートフォリオは、
-
-「機能数の多さ」ではなく、
-
-**保守しやすく、継続的に改善できるWebアプリケーションを設計・実装すること**
-
-を目標に制作しました。
-
-実務では新機能の追加や仕様変更が継続的に発生するため、
-
-可読性・拡張性・品質を意識した設計を心がけています。
-
-今後も継続的に改善を重ねながら、
-
-より実践的なアプリケーションへ発展させていく予定です。
+プロジェクト規模に適した構成を選択しています。
 
 ---
 
-# Contact
+# おわりに
 
-GitHub
+本プロジェクトでは、
 
-https://github.com/utl-flaxy
+ECサイトとして必要な機能を実装するだけではなく、
 
-Portfolio
+保守性・品質・継続的な改善を意識した設計を目指しました。
 
-https://shining-will-shop.com
+Laravel標準機能を活用しながら、
 
----
+Feature Test・GitHub Actions・AWS・Dockerを組み合わせ、
 
-# License
+実務に近い開発フローを経験しています。
 
-This project is published for portfolio and learning purposes.
+今後も継続的に改善を行い、
+
+より保守しやすく、
+
+拡張性の高いWebアプリケーションへ発展させていきます。
+
