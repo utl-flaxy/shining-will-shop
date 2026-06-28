@@ -1,365 +1,234 @@
-# 🌟 Shining Will Shop
+# Shining Will Shop
 
-> Laravel × Filament × AWS を用いて開発した、アイドル・アーティスト向けECサイト
+> **Laravel 11で開発した、実務を意識したECサイトポートフォリオ**
 
-商品管理・カテゴリ管理・注文管理・在庫管理を実装し、
-AWS EC2（Ubuntu・Nginx・MariaDB）およびAmazon S3を利用してデプロイしたポートフォリオです。
-
----
-
-## 🚀 Demo
-
-### Front Site
-
-**URL**
-
-http://35.79.46.10/
+![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel\&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php\&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql\&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws\&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker\&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions\&logoColor=white)
+![PHPUnit](https://img.shields.io/badge/Test-PHPUnit-366488)
+![Filament](https://img.shields.io/badge/Admin-Filament-v3-8A2BE2)
 
 ---
 
-### Admin
+# Demo
 
-http://35.79.46.10/admin
-
-> ※デモ環境のため、管理画面へのアクセスを制限しています。
-
----
-
-## GitHub
-
-https://github.com/utl-flaxy/shining-will-shop
+| Item   | URL                                            |
+| ------ | ---------------------------------------------- |
+| Demo   | https://shining-will-shop.com                  |
+| GitHub | https://github.com/utl-flaxy/shining-will-shop |
 
 ---
 
-# 📷 Screenshots
+# Screenshots
 
-## トップページ
-
-![Top](docs/images/top.png)
+> トップページ・商品一覧・商品詳細・カート・注文画面・管理画面などのスクリーンショットを掲載予定
 
 ---
 
-## 商品一覧
+# Overview
 
-![Products](docs/images/products.png)
+Shining Will Shop は、Laravel 11 を用いて開発したECサイトです。
 
----
+一般的な商品販売サイトとしての機能だけではなく、
 
-## 商品詳細
+* 商品検索
+* カート
+* 注文処理
+* 在庫管理
+* マイページ
+* 管理画面
+* 自動テスト
+* CI（GitHub Actions）
 
-![Product Detail](docs/images/product-detail.png)
+まで実装し、実務を意識した構成で開発しました。
 
----
+本プロジェクトでは「機能数」よりも、
 
-## カート
+* 保守性
+* 拡張性
+* 可読性
+* 品質
 
-![Cart](docs/images/cart.png)
-
----
-
-## 注文確認
-
-![Checkout](docs/images/checkout.png)
-
----
-
-## 管理ダッシュボード
-
-![Dashboard](docs/images/admin-dashboard.png)
+を重視しています。
 
 ---
 
-## 商品管理
+# Why This Project?
 
-![Products Admin](docs/images/admin-products.png)
+Laravelの基本的なCRUDだけではなく、
 
----
+実際のWebアプリケーション開発で必要になる
 
-## 商品編集
+* 認証
+* 注文フロー
+* 在庫管理
+* 管理画面
+* テスト
+* CI/CD
 
-![Product Edit](docs/images/admin-product-edit.png)
+まで一貫して経験することを目的として制作しました。
 
----
+また、
 
-## カテゴリ管理
+**「あとから機能追加しやすい設計」**
 
-![Categories](docs/images/admin-categories.png)
+を目標とし、
 
----
+Controllerへロジックを集中させず、
 
-## 注文管理
-
-![Orders](docs/images/admin-orders.png)
-
----
-
-# 💡 Project Overview
-
-Shining Will Shop は、アイドル・アーティスト向け公式オンラインショップを想定して開発したECサイトです。
-
-単に画面を作成するだけではなく、
-
-- 商品管理
-- カテゴリ管理
-- 注文管理
-- 在庫管理
-- 商品画像管理(Amazon S3)
-- AWS EC2へのデプロイ
-
-までを一つのWebサービスとして実装しました。
-
-Laravel標準機能（Eloquent ORM、Query Scope、Storage、Transaction）を活用し、
-
-- 保守性
-- 拡張性
-- 可読性
-- データ整合性
-
-を意識した設計を行っています。
-
-また、画像は Amazon S3 に保存し、AWS EC2 上へデプロイすることで、実運用を意識したインフラ構成としています。
+Model・Eloquent・Laravel標準機能を活用した構成を採用しています。
 
 ---
 
-# ✨ Features
+# Design Principles
 
-## ユーザー機能
+このプロジェクトでは以下の方針で設計しました。
 
-- 商品一覧表示
-- 商品詳細表示
-- キーワード検索
-- カテゴリ検索
-- 並び替え
-- ページネーション
-- カート機能
-- 注文確認
+* Laravel標準機能を積極的に利用する
+* Fat Controllerを避ける
+* ビジネスロジックをModelへ集約する
+* Query Scopeを活用して検索処理を共通化する
+* 保守性・拡張性を優先する
+* 自動テストを前提とした設計にする
 
----
-
-## 管理者機能
-
-- 商品管理
-- カテゴリ管理
-- 注文管理
-- 商品画像管理
-- 商品公開・非公開管理
-- 注文ステータス管理
-
-> ※ 決済機能（Square等）は現在未実装です。本ポートフォリオでは、ECサイトのバックエンド設計・管理機能・AWS構成を中心に実装しています。
->
-> # 🛠 技術スタック
-
-本プロジェクトでは、Laravelの標準機能を活用しながら、実運用を意識したAWS環境で構築しています。
-
-| Category        | Technology                        |
-| --------------- | --------------------------------- |
-| Language        | PHP 8.3                           |
-| Framework       | Laravel 11                        |
-| Admin Panel     | Filament v3                       |
-| Frontend        | Blade / Tailwind CSS / JavaScript |
-| Build Tool      | Vite                              |
-| Database        | MariaDB                           |
-| Infrastructure  | AWS EC2                           |
-| Web Server      | Nginx                             |
-| Image Storage   | Amazon S3                         |
-| Development     | Docker / Docker Compose / WSL2    |
-| Version Control | Git / GitHub                      |
+これにより、新しい機能追加や仕様変更にも対応しやすい構成を目指しました。
 
 ---
 
-# ☁️ AWS Architecture
+# Tech Stack
 
-本番環境はAWS上へデプロイしています。
+## Backend
 
-画像はAmazon S3へ保存し、Webサーバーとは分離した構成としています。
-
-```mermaid
-flowchart LR
-
-Browser --> Nginx
-
-Nginx --> PHP["PHP-FPM"]
-
-PHP --> Laravel["Laravel 11"]
-
-Laravel --> MariaDB[(MariaDB)]
-
-Laravel --> S3[(Amazon S3)]
-
-subgraph AWS EC2
-    Nginx
-    PHP
-    Laravel
-    MariaDB
-end
-```
-
----
-
-# 🏗 Infrastructure
-
-```text
-Internet
-      │
-      ▼
-AWS EC2 (Ubuntu 22.04)
-      │
-      ▼
-Nginx
-      │
-      ▼
-Laravel 11
-   ├──────────► MariaDB
-   │
-   └──────────► Amazon S3
-```
-
----
-
-# 📦 Why This Stack?
-
-## Laravel
-
-Laravelを採用した理由は、
-
-* 豊富な標準機能
-* 高い保守性
+* PHP 8.3
+* Laravel 11
 * Eloquent ORM
-* Storage Facade
-* Validation
+* Laravel Breeze
+* Laravel Mail
 
-などを活用でき、実務でも利用される設計を学ぶことができるためです。
+## Frontend
 
-本プロジェクトでは、
+* Blade
+* Tailwind CSS
+* Vite
+* JavaScript
 
-* Query Scope
-* Eloquent Relationship
-* Storage Facade
-* Transaction
+## Database
 
-などLaravel標準機能を積極的に利用しています。
+* MySQL
+* SQLite（Testing）
+
+## Infrastructure
+
+* AWS EC2
+* Docker Compose
+
+## Admin
+
+* Filament v3
+
+## Quality
+
+* PHPUnit
+* GitHub Actions
+* RefreshDatabase
 
 ---
 
-## Filament
+# Main Features
 
-管理画面はFilamentで構築しました。
+## Customer
 
-Filamentを利用することで、
+* 商品一覧
+* 商品検索
+* カテゴリ検索
+* 並び替え
+* 商品詳細
+* カート
+* 数量変更
+* 注文確認
+* 注文完了
+* マイページ
+* 注文履歴
 
-* CRUD
-* Search
-* Filter
-* Sort
-* Form
-* Table
+---
 
-などを短期間で実装でき、Laravelとの親和性も高いため採用しました。
+## Administrator
 
-実装内容
-
+* Dashboard
 * 商品管理
 * カテゴリ管理
 * 注文管理
+* ユーザー管理
+* 配送情報管理
 
 ---
 
-## Amazon S3
+## Quality
 
-商品画像・カテゴリ画像はAmazon S3へ保存しています。
+* Feature Test
+* GitHub Actions
+* SQLite Testing
+* CIによる自動テスト
 
-画像をWebサーバーから分離することで、
+---
 
-* サーバー容量削減
-* 保存先の抽象化
-* 将来的なスケールへの対応
+# Project Goals
 
-を実現しています。
+このプロジェクトでは、次の点を特に重視しました。
 
-Laravel Storageを利用することで、
+* Laravelらしい実装
+* 可読性の高いコード
+* 保守しやすい設計
+* 品質を維持する仕組み
+* 実務を意識した開発フロー
 
-```php
-Storage::disk('s3')->put(...)
+単に動作するアプリケーションではなく、
+
+**「チーム開発でも保守しやすいコードを書くこと」**
+
+を意識して制作しています。
+
+# Architecture
+
+本アプリケーションは、Laravelの標準アーキテクチャをベースに設計しています。
+
+```text
+Request
+    │
+    ▼
+Route
+    │
+    ▼
+Controller
+    │
+    ▼
+Model (Business Logic)
+    │
+    ▼
+Database
 ```
 
-```php
-Storage::disk('s3')->url(...)
-```
-
-のみで保存・取得できる構成としました。
+Controllerはリクエスト処理と画面遷移のみを担当し、ビジネスロジックはModelへ集約しています。
 
 ---
 
-## MariaDB
+# Technical Decisions
 
-MariaDBを採用し、
+## Why Query Scope?
 
-* 商品
-* カテゴリ
-* 注文
-* 注文明細
-
-などをリレーショナルデータベースとして管理しています。
-
-Laravel Eloquentとの親和性も高く、保守性を重視した設計を行いました。
-
----
-
-## Docker
-
-ローカル開発環境ではDockerを利用しています。
-
-環境差異を最小限に抑え、
-
-* PHP
-* MariaDB
-* Node.js
-
-などをコンテナ上で統一しています。
-
----
-
-# 🎯 この構成で意識したこと
-
-このプロジェクトでは、
-
-「動作すること」だけではなく、
-
-* 保守しやすいこと
-* 機能追加しやすいこと
-* インフラを意識すること
-
-を重視しました。
-
-AWS・Laravel・Amazon S3を組み合わせることで、実際のWebサービスに近い構成を意識しています。
-
-# ✨ Features
-
-本プロジェクトでは、一般ユーザー向けのEC機能と、運営者向けの管理機能を実装しています。
-
----
-
-# 👤 User Features
-
-## 商品一覧
-
-* 商品一覧表示
-* 商品画像表示
-* カテゴリ表示
-* 在庫状況表示
-* 商品詳細画面への遷移
-
----
-
-## 商品検索
-
-Laravel Query Scope を利用し、
+商品検索では、
 
 * キーワード検索
-* カテゴリ絞り込み
+* カテゴリ検索
 * 並び替え
+* 公開商品のみ取得
 
-を実装しています。
+など複数条件を組み合わせています。
+
+これらをControllerへ記述すると保守が難しくなるため、検索ロジックはModelのQuery Scopeへ集約しました。
 
 ```php
 Product::query()
@@ -367,939 +236,451 @@ Product::query()
     ->keyword($keyword)
     ->category($category)
     ->sort($sort)
-    ->paginate(12)
-    ->withQueryString();
+    ->paginate(12);
 ```
 
-Query Scopeへ処理を集約することで、
+### Benefits
 
-* Controllerの肥大化防止
-* 再利用性向上
-* 可読性向上
-
-を実現しています。
+* Controllerをシンプルに保てる
+* 検索条件の追加が容易
+* テストしやすい
+* 再利用しやすい
 
 ---
 
-## ページネーション
+## Why Business Logic in Model?
 
-Laravel標準のPaginationを利用しています。
-
-検索条件を保持したままページ遷移できるよう、
+販売可能かどうかの判定はControllerではなくProduct Modelへ実装しています。
 
 ```php
-->withQueryString()
+$product->isAvailableForSale();
 ```
 
-を利用しています。
-
----
-
-## 商品詳細
-
-商品詳細画面では、
-
-* 商品画像
-* 商品説明
-* 価格
-* 在庫状況
-
-を表示しています。
-
-在庫が無い商品については、
-
-```
-SOLD OUT
-```
-
-表示となります。
-
----
-
-## カート
-
-カート機能では、
-
-* 商品追加
-* 数量変更
-* 商品削除
-* 合計金額計算
-
-を実装しています。
-
----
-
-## 注文確認
-
-注文前に、
-
-* 注文内容
-* 配送方法
-* 応援メッセージ
-
-を確認できる画面を実装しています。
-
-> ※ 決済機能（Square Payments API）は現在未実装です。
-
----
-
-# 👨‍💼 Admin Features（Filament）
-
-運営者向けにはFilamentを利用した管理画面を構築しています。
-
----
-
-## 商品管理
-
-* 商品登録
-* 商品編集
-* 商品削除
-* 公開・非公開切り替え
-* 商品画像管理
-
----
-
-## カテゴリ管理
-
-* カテゴリ登録
-* カテゴリ編集
-* 表示順管理
-* カテゴリ画像管理
-
----
-
-## 注文管理
-
-注文情報を一覧で管理できます。
-
-管理できる内容
-
-* 注文番号
-* 注文日時
-* 購入者
-* 合計金額
-* 注文ステータス
-* 配送方法
-
----
-
-## 注文ステータス
-
-注文状況は以下の状態で管理しています。
-
-* 受付
-* 発送準備中
-* 発送済み
-* 配送完了
-* キャンセル
-
-管理画面から注文ステータスを更新できる構成としています。
-
----
-
-# 🖼 Image Management
-
-商品画像・カテゴリ画像はAmazon S3へ保存しています。
-
-Laravel Storageを利用することで、
-
-保存先を意識せず画像を扱えるよう設計しています。
+在庫数取得
 
 ```php
-Storage::disk('s3')->put(...)
+$product->totalStock();
 ```
+
+売り切れ判定
 
 ```php
-Storage::disk('s3')->url(...)
+$product->isSoldOut();
 ```
 
-Storage Facadeを利用することで、
+### Benefits
 
-今後保存先が変更になった場合でも、
+販売ロジックを1箇所へ集約することで、
 
-アプリケーション側の修正を最小限に抑えられる構成です。
-
----
-
-# 📌 主な実装機能一覧
-
-| 機能            |     実装    |
-| ------------- | :-------: |
-| 商品一覧          |     ✅     |
-| 商品詳細          |     ✅     |
-| 商品検索          |     ✅     |
-| カテゴリ検索        |     ✅     |
-| 並び替え          |     ✅     |
-| ページネーション      |     ✅     |
-| カート           |     ✅     |
-| 注文確認          |     ✅     |
-| 商品管理          |     ✅     |
-| カテゴリ管理        |     ✅     |
-| 注文管理          |     ✅     |
-| 注文ステータス管理     |     ✅     |
-| Amazon S3画像管理 |     ✅     |
-| AWS EC2デプロイ       |     ✅     |
-| 決済機能          | ⏳（今後実装予定） |
+複数画面から同じ判定を利用できます。
 
 ---
 
-# 🎯 この章で意識したこと
+## Why Eloquent Relationship?
 
-ECサイトとして必要な基本機能だけでなく、
+SQLを直接記述する代わりに、
 
-* 検索性
-* 保守性
-* 管理性
+Laravel標準のRelationshipを利用しています。
 
-を重視して実装しました。
-
-特に、検索処理をQuery Scopeへ集約し、管理画面にはFilamentを採用することで、Laravelの標準機能を活かした保守しやすい構成を意識しています。
-
-# 🗄 Database Design
-
-本プロジェクトでは、商品・注文・画像・カテゴリを中心としたデータモデルを設計しています。
-
-データの重複を避け、保守性・拡張性を考慮してテーブルを分割しました。
-
----
-
-# ER Diagram
-
-```mermaid
-erDiagram
-
-    categories ||--o{ products : has
-
-    products ||--o{ product_images : has
-
-    products ||--o{ product_variants : has
-
-    orders ||--o{ order_items : contains
-
-    products ||--o{ order_items : ordered
-
-    product_variants ||--o{ order_items : selected
-
-    categories {
-        bigint id
-        string name
-        string image
-    }
-
-    products {
-        bigint id
-        bigint category_id
-        string name
-        int price
-        int stock
-        boolean is_active
-        boolean is_published
-    }
-
-    product_images {
-        bigint id
-        bigint product_id
-        string url
-    }
-
-    product_variants {
-        bigint id
-        bigint product_id
-        string name
-        int stock
-    }
-
-    orders {
-        bigint id
-        string order_number
-        string customer_name
-        int total_amount
-        string status
-    }
-
-    order_items {
-        bigint id
-        bigint order_id
-        bigint product_id
-        bigint product_variant_id
-        int quantity
-        int subtotal
-    }
-```
-
----
-
-# 📦 Database Tables
-
-## Categories
-
-商品のカテゴリを管理します。
-
-主な項目
-
-* カテゴリ名
-* カテゴリ画像
-* 表示順
-* 公開状態
-
----
-
-## Products
-
-商品情報を管理します。
-
-管理項目
-
-* 商品名
-* 商品説明
-* SKU
-* 価格
-* 在庫
-* 公開状態
-
-カテゴリとは
-
-```
+```text
 Category
-
-↓
-
-Products
+    │
+    └──── Product
+              │
+              └──── ProductImage
 ```
 
-の1対多で関連付けています。
+注文では
 
----
-
-## Product Images
-
-商品画像を管理します。
-
-1商品に対して複数枚登録できるよう、
-
-Products
-
-↓
-
-ProductImages
-
-の構成としています。
-
-画像ファイルはAmazon S3へ保存し、
-
-データベースには保存パスのみ保持しています。
-
----
-
-## Product Variants
-
-商品バリエーションを管理します。
-
-例えば、
-
-* サイズ
-* カラー
-* メンバー別商品
-
-などへ拡張できる設計です。
-
-通常商品にも対応できるよう、
-
-Productとのリレーションを持っています。
-
----
-
-## Orders
-
-注文情報を管理します。
-
-保持している情報
-
-* 注文番号
-* 購入者情報
-* 配送方法
-* 合計金額
-* 注文ステータス
-
----
-
-## Order Items
-
-注文商品を管理します。
-
-1回の注文で複数商品を購入できるよう、
-
-Orders
-
-↓
-
-OrderItems
-
-の構成としています。
-
-保存内容
-
-* 商品
-* 数量
-* 小計
-
----
-
-# 🔗 Eloquent Relationship
-
-Laravel Eloquentを利用し、
-
-リレーションをModelへ集約しています。
-
-```php
-Product
-
-belongsTo(Category)
-
-hasMany(ProductImage)
-
-hasMany(ProductVariant)
-```
-
-```php
+```text
 Order
-
-hasMany(OrderItem)
+    │
+    └──── OrderItem
+                 │
+                 └──── Product
 ```
 
-```php
-OrderItem
+### Benefits
 
-belongsTo(Order)
+* 可読性向上
+* N+1問題を回避しやすい
+* Laravelらしい実装
 
-belongsTo(Product)
+---
 
-belongsTo(ProductVariant)
+## Why Session Cart?
+
+今回はログイン不要でも利用できるECサイトを想定したため、
+
+カートはSessionで管理しています。
+
+### Trade-off
+
+**メリット**
+
+* 実装がシンプル
+* ゲスト購入に対応しやすい
+
+**デメリット**
+
+* デバイス間同期はできない
+
+実運用ではRedisやデータベース管理も検討できますが、本ポートフォリオではシンプルさを優先しました。
+
+---
+
+## Why Filament?
+
+管理画面はFilament v3を採用しました。
+
+理由
+
+* Laravelとの親和性
+* CRUDを高速に構築できる
+* カスタマイズ性が高い
+
+Filamentを利用することで、業務ロジックの実装に集中できる構成としました。
+
+---
+
+# Database Design
+
+主要テーブル
+
+```text
+users
+
+categories
+
+products
+
+product_images
+
+orders
+
+order_items
 ```
 
----
+注文情報と商品情報を分離することで、
 
-# 💡 設計で工夫したこと
-
-## 正規化
-
-画像・カテゴリ・注文明細を独立テーブルとすることで、
-
-* データ重複削減
-* 保守性向上
-* 将来的な機能追加
-
-を容易にしています。
+商品の価格変更後も注文時点の情報を保持できる設計としています。
 
 ---
 
-## 画像管理
+# Design Trade-offs
 
-Productsテーブルへ画像情報を直接保持せず、ProductImagesテーブルへ分離しました。
+設計時には以下の点を意識しました。
 
-これにより、
-
-* 複数画像
-* 画像追加
-* 画像削除
-
-へ柔軟に対応できます。
-
----
-
-## 注文設計
-
-OrdersとOrderItemsを分離することで、
-
-1回の注文で
-
-* 商品A
-* 商品B
-* 商品C
-
-など複数商品の購入へ対応しています。
-
-また、
-
-売上集計や分析処理も行いやすい構成となっています。
+| 選択             | 理由          |
+| -------------- | ----------- |
+| Session Cart   | 実装のシンプルさを優先 |
+| Query Scope    | 検索ロジックの共通化  |
+| Eloquent       | 保守性・可読性を重視  |
+| Filament       | 管理画面を効率よく構築 |
+| SQLite Testing | テスト速度を向上    |
 
 ---
 
-# 🎯 この設計で意識したこと
+# What I Optimized
 
-本プロジェクトでは、
+本プロジェクトでは「動作すること」だけでなく、
 
-「画面が動く」
-
-だけではなく、
-
-* データ整合性
-* リレーション設計
-* 保守性
-* 拡張性
+* コードの読みやすさ
+* 修正しやすさ
+* テストしやすさ
 
 を重視しました。
 
-将来的に、
+そのため、
 
-* 決済機能
-* 会員機能
-* レビュー機能
-* お気に入り機能
+* Fat Controllerを避ける
+* Laravel標準機能を活用する
+* ビジネスロジックを集約する
 
-などを追加しても、
+という設計方針を採用しています。
 
-既存テーブルへの影響を最小限に抑えられるデータベース設計を意識しています。
+# Order Flow
 
-# ⚙️ Design & Implementation
+注文処理では、データ整合性を維持するために一連の処理をトランザクションとして実行しています。
 
-本プロジェクトでは、単に機能を実装するだけではなく、
-
-- 保守性
-- 可読性
-- 拡張性
-- データ整合性
-
-を重視して設計しました。
-
-Laravelの標準機能を積極的に活用し、
-責務を適切に分離することを意識しています。
+```text
+Product Detail
+      │
+      ▼
+Add to Cart
+      │
+      ▼
+Checkout
+      │
+      ▼
+Create Order
+      │
+      ▼
+Create Order Items
+      │
+      ▼
+Decrease Stock
+      │
+      ▼
+Send Mail
+      │
+      ▼
+Complete
+```
 
 ---
 
-# 🔍 Query Scope
+# Transaction
 
-検索条件はControllerへ直接記述せず、
-ModelのQuery Scopeへ集約しています。
+注文処理では `DB::transaction()` を利用しています。
 
 ```php
-$products = Product::query()
-    ->published()
-    ->keyword($keyword)
-    ->category($category)
-    ->sort($sort)
-    ->paginate(12)
-    ->withQueryString();
+DB::transaction(function () {
+
+    // 注文作成
+
+    // 注文明細作成
+
+    // 在庫減算
+
+    // メール送信
+
+});
 ```
 
-各Scopeは
+## Why?
 
-- 公開状態
-- キーワード
-- カテゴリ
-- 並び替え
+注文途中でエラーが発生した場合でも、
 
-という責務ごとに分離しています。
+* 注文だけ保存される
+* 在庫だけ減少する
+
+といったデータ不整合を防ぐためです。
+
+データの整合性を優先し、処理全体を1つのトランザクションとして扱っています。
+
+---
+
+# Inventory Management
+
+在庫管理はProduct Modelへ集約しています。
+
+利用している主なメソッド
+
+```php
+$product->isAvailableForSale();
+
+$product->isSoldOut();
+
+$product->totalStock();
+```
+
+販売可否判定をControllerへ分散させないことで、
+
+複数画面から同じロジックを利用できます。
+
+---
+
+# Quality Assurance
+
+品質維持のため、
+
+Feature Testを実装しています。
+
+現在実装済み
+
+* Authentication
+* Product Search
+* Cart
+* Checkout
+* Profile
+
+```text
+48 Tests
+
+130 Assertions
+
+All Passed ✅
+```
+
+---
+
+# Why Feature Test?
+
+単体テストだけではなく、
+
+実際のHTTPリクエストを通した動作確認を重視しました。
 
 これにより
 
-- Controllerの肥大化防止
-- 再利用性向上
-- 可読性向上
+* Routing
+* Authentication
+* Session
+* Database
+
+まで含めて確認できます。
+
+---
+
+# SQLite Testing
+
+テストではSQLiteを利用しています。
+
+```text
+APP_ENV=testing
+
+DB_CONNECTION=sqlite
+```
+
+## Why?
+
+* テスト実行速度が速い
+* 毎回クリーンなDBで開始できる
+* CIとの相性が良い
+
+---
+
+# RefreshDatabase
+
+各テストでは
+
+```php
+use RefreshDatabase;
+```
+
+を利用しています。
+
+これにより
+
+* テスト同士が影響しない
+* 再現性のあるテスト
 
 を実現しています。
 
 ---
 
-# 🔗 Eloquent Relationship
+# Continuous Integration
 
-Laravel EloquentのRelationshipを利用し、
-テーブル同士を関連付けています。
+GitHub Actionsを利用し、
 
-```php
-Product
-
-belongsTo(Category)
-
-hasMany(ProductImage)
-
-hasMany(ProductVariant)
-```
-
-```php
-Order
-
-hasMany(OrderItem)
-```
-
-```php
-OrderItem
-
-belongsTo(Order)
-
-belongsTo(Product)
-
-belongsTo(ProductVariant)
-```
-
-これにより、
-
-Eloquent Relationshipを利用することで、関連データをオブジェクトとして扱えるようにし、保守性と可読性を向上させています。
-
----
-
-# ☁️ Amazon S3
-
-商品画像・カテゴリ画像はAmazon S3へ保存しています。
-
-Laravel Storageを利用することで、
-
-```php
-Storage::disk('s3')->put(...)
-```
-
-取得も
-
-```php
-Storage::disk('s3')->url(...)
-```
-
-のみで実装しています。
-
-Storage Facadeを利用することで、
-
-保存先が
-
-- Local
-- Amazon S3
-- Cloud Storage
-
-へ変更になった場合でも、
-アプリケーション側の変更を最小限に抑えられます。
-
----
-
-# 📦 Pagination
-
-商品一覧ではLaravel標準のPaginationを採用しています。
-
-```php
-->paginate(12)
-->withQueryString();
-```
-
-検索条件・カテゴリ・並び替えを保持したまま
-ページ遷移できるようにしています。
-
----
-
-# 🛠 Filament
-
-管理画面はFilamentを利用しています。
-
-実装内容
-
-- 商品管理
-- カテゴリ管理
-- 注文管理
-
-CRUDだけではなく、
-
-- Search
-- Sort
-- Filter
-
-などLaravelとの親和性が高い機能を活用しています。
-
----
-
-# 🎯 責務分離
-
-Controllerへビジネスロジックを書かないことを意識しました。
-
-例えば
-
-```
-CheckoutController
-
-↓
-
-Order::decreaseStock()
-
-↓
-
-Product
-ProductVariant
-```
-
-という責務分離を行っています。
-
-また、
-
-Viewでは表示のみを担当し、
-
-複雑な判定はModelへ集約しています。
-
-例えば
-
-```php
-$product->isSoldOut()
-
-$product->totalStock()
-
-$product->isAvailableForSale()
-```
-
-のように、
-
-意味が分かるメソッドを利用しています。
-
----
-
-# 💡 この章で伝えたいこと
-
-このプロジェクトでは、
-
-「動くアプリケーション」
-
-を作るだけではなく、
-
-Laravel標準機能を活用しながら、
-
-- 保守性
-- 拡張性
-- 再利用性
-
-を意識した設計を心掛けました。
-
-今後機能追加を行う場合でも、
-既存コードへの影響を最小限に抑えられる構成を目指しています。
-
-# 🔄 Order Flow & Inventory Management
-
-ECサイトでは、
-
-「注文だけ保存される」
-
-「在庫だけ更新される」
-
-といった不整合が発生しないことが重要です。
-
-本プロジェクトでは、LaravelのTransactionと排他制御を利用し、安全に注文処理を行うよう設計しています。
-
----
-
-# 📋 Order Flow
-
-```mermaid
-sequenceDiagram
-
-participant User
-participant CheckoutController
-participant DB
-participant Order
-participant Product
-
-User->>CheckoutController: 注文確定
-
-CheckoutController->>DB: Transaction開始
-
-CheckoutController->>Order: 注文作成
-
-Order->>DB: orders保存
-
-CheckoutController->>DB: order_items保存
-
-CheckoutController->>Order: decreaseStock()
-
-Order->>Product: 在庫更新
-
-Product->>DB: 更新
-
-DB-->>CheckoutController: Commit
-
-CheckoutController-->>User: 注文完了
-```
-
----
-
-# 🔒 Transaction
-
-注文処理では、
-
-以下を**1つのTransaction**として実行しています。
-
-- 注文情報作成
-- 注文明細作成
-- 在庫更新
-
-途中で例外が発生した場合は、
-
-```php
-DB::rollBack();
-```
-
-を実行し、
-
-注文情報・注文明細・在庫更新をすべて取り消します。
-
-これにより、
-
-- 注文だけ保存される
-- 在庫だけ更新される
-
-といったデータ不整合を防いでいます。
-
----
-
-# 🔐 lockForUpdate()
-
-在庫更新では、
-
-```php
-lockForUpdate()
-```
-
-を利用しています。
-
-```php
-$product = Product::query()
-    ->lockForUpdate()
-    ->find($item->product->id);
-```
-
-これにより、
-
-複数ユーザーが同時に購入した場合でも、
-
-- 二重購入
-- 在庫マイナス
-
-などを防止できます。
-
-ECサイトでは重要となる排他制御を意識して実装しました。
-
----
-
-# 📦 Inventory Update
-
-注文確定後、
-
-```php
-$order->decreaseStock();
-```
-
-を実行し、
-
-Orderモデルへ在庫更新処理を集約しています。
-
-通常商品
-
-```php
-$product->decrement('stock', $qty);
-```
-
-バリエーション商品
-
-```php
-$variant->decrement('stock', $qty);
-```
-
-のように、
-
-商品種別によって更新先を切り替えています。
-
----
-
-# 🧩 Product Variant Support
-
-商品バリエーションが存在する場合は、
-
-Productではなく、
-
-ProductVariant
-
-の在庫を更新しています。
-
-これにより、
-
-- サイズ違い
-- カラー違い
-- メンバー別商品
-
-などへ拡張できる構成になっています。
-
----
-
-# 🏛 Responsibility Separation
-
-在庫更新はControllerへ実装せず、
-
-Orderモデルへ責務を集約しました。
+Push・Pull Request時に自動でテストを実行しています。
 
 ```text
-CheckoutController
+Checkout Repository
 
-↓
+      │
 
-Order::decreaseStock()
+Composer Install
 
-↓
+      │
 
-Product
-ProductVariant
+Generate APP_KEY
+
+      │
+
+Migration
+
+      │
+
+PHPUnit
+
+      │
+
+Success
 ```
 
-Controllerは
+## Why?
 
-- 注文受付
-- Transaction管理
+ローカル環境だけでなく、
 
-のみを担当し、
+GitHub上でもテストを実行することで、
 
-ビジネスロジックはModelへ集約しています。
+環境差異による問題を早期に発見できるようにしています。
 
 ---
 
-# 🎯 この設計で意識したこと
+# Infrastructure
 
-本プロジェクトでは、
+本アプリケーションはAWS EC2へデプロイしています。
 
-「注文できる」
+```text
+GitHub
 
-だけではなく、
+    │
 
-ECサイトとして重要な
+GitHub Actions
 
-- データ整合性
-- 排他制御
-- 責務分離
-- 保守性
+    │
 
-を重視しました。
+AWS EC2
 
-特に、
+    │
 
-Laravel Transaction
+Docker
 
-lockForUpdate()
+    │
 
-Modelへの責務集約
+Laravel
 
-を組み合わせることで、
+    │
 
-実務でも保守しやすい構成を目指しています。
+MySQL
+```
 
-この考え方は、今後決済機能や会員機能などを追加する際にも活かせるよう設計しています。
+---
 
-# 🚀 Setup
+# Development Environment
+
+ローカル環境はDocker Composeで構築しています。
+
+主な構成
+
+* PHP 8.3
+* Laravel 11
+* MySQL
+* Node.js
+* Vite
+
+環境構築手順を統一することで、
+
+開発環境の再現性を高めています。
+
+---
+
+# Project Highlights
+
+このプロジェクトで特に注力した点
+
+* Laravel標準機能を活用した設計
+* Query Scopeによる検索処理の共通化
+* Transactionによる注文処理
+* Eloquent Relationshipを利用したデータ設計
+* PHPUnitによるFeature Test
+* GitHub ActionsによるCI
+* Dockerを利用した開発環境
+* AWS EC2へのデプロイ
+
+単に機能を実装するだけではなく、
+
+「変更しやすく、継続的に改善できる構成」
+
+を意識して設計しました。
+
+# Local Development
 
 ## Requirements
 
-本プロジェクトの動作環境です。
-
-| Software | Version |
-|----------|---------|
-| PHP | 8.3 |
-| Laravel | 11 |
-| MariaDB | 10.x |
-| Node.js | 20+ |
-| Composer | Latest |
-| npm | Latest |
+* PHP 8.3
+* Composer
+* Node.js
+* Docker
+* MySQL
 
 ---
 
-# Clone
+## Installation
+
+Clone the repository.
 
 ```bash
 git clone https://github.com/utl-flaxy/shining-will-shop.git
@@ -1307,9 +688,7 @@ git clone https://github.com/utl-flaxy/shining-will-shop.git
 cd shining-will-shop
 ```
 
----
-
-# Install
+Install dependencies.
 
 ```bash
 composer install
@@ -1317,61 +696,37 @@ composer install
 npm install
 ```
 
----
-
-# Environment
+Copy the environment file.
 
 ```bash
 cp .env.example .env
+```
 
+Generate the application key.
+
+```bash
 php artisan key:generate
 ```
 
-データベース接続情報やAmazon S3の認証情報を`.env`へ設定してください。
-
----
-
-# Database
+Run the migrations.
 
 ```bash
 php artisan migrate
-
-php artisan db:seed
 ```
 
----
-
-# Storage
-
-ローカル環境
+Create the storage symlink.
 
 ```bash
 php artisan storage:link
 ```
 
-本番環境ではAmazon S3を利用しています。
-
----
-
-# Build
-
-開発時
+Start the frontend development server.
 
 ```bash
 npm run dev
 ```
 
-本番ビルド
-
-```bash
-npm run build
-```
-
----
-
-# Start
-
-ローカル環境
+Launch the application.
 
 ```bash
 php artisan serve
@@ -1379,260 +734,179 @@ php artisan serve
 
 ---
 
-# ☁ AWS Deployment
+# Future Improvements
 
-本番環境はAWS上へデプロイしています。
+今後は以下の機能追加を予定しています。
+
+## Payment
+
+* Square決済対応
+* Webhook対応
+* 決済履歴管理
+
+---
+
+## Shopping Experience
+
+* お気に入り機能
+* 商品レビュー
+* レコメンド
+* クーポン
+* ポイント
+
+---
 
 ## Infrastructure
 
-- AWS EC2
-- Ubuntu 22.04
-- Nginx
-- PHP-FPM
-- MariaDB
-- Amazon S3
+* CloudFront
+* S3画像配信
+* キャッシュ最適化
 
 ---
 
-## Deploy Flow
+## Application
+
+* PWA対応
+* 多言語対応
+* 通知機能
+
+---
+
+# Lessons Learned
+
+このプロジェクトを通して、
+
+Laravelの基本機能だけではなく、
+
+実際のWebアプリケーション開発では
+
+設計・品質・運用まで考えることが重要であると学びました。
+
+特に印象的だったのは、
+
+* Controllerへロジックを書きすぎないこと
+* データ整合性を保つこと
+* 自動テストを書くこと
+* CIを整備すること
+
+です。
+
+また、
+
+「まず動くものを作る」
+
+だけではなく、
+
+「変更しやすい設計」
+
+を意識するようになりました。
+
+---
+
+# What I Would Improve
+
+もし本プロジェクトをさらに発展させる場合は、
+
+以下の改善を検討しています。
+
+* Service Layerの導入
+* Repository Patternの採用可否検討
+* キャッシュ戦略の見直し
+* API化への対応
+* フロントエンドのSPA化
+* パフォーマンス計測と改善
+
+現時点では、Laravel標準機能を活かしたシンプルな構成を優先していますが、プロジェクト規模に応じて設計を見直す余地があると考えています。
+
+---
+
+# Repository Structure
 
 ```text
+app/
+├── Http/
+├── Models/
+├── Mail/
+├── Filament/
+
+database/
+├── migrations/
+├── seeders/
+
+resources/
+├── views/
+├── css/
+├── js/
+
+routes/
+
+tests/
+├── Feature/
+└── Unit/
+
+.github/
+└── workflows/
+```
+
+---
+
+# Key Takeaways
+
+このプロジェクトでは、
+
+Laravelを利用したECサイト開発だけではなく、
+
+* 設計
+* テスト
+* CI
+* インフラ
+* 運用
+
+まで含めた一連の開発を経験しました。
+
+特に以下の点を意識しています。
+
+* Laravel標準機能を活用した設計
+* 保守性・可読性を重視した実装
+* Feature Testによる品質担保
+* GitHub Actionsによる継続的インテグレーション
+* Dockerによる再現性のある開発環境
+* AWS EC2へのデプロイ
+
+---
+
+# About This Portfolio
+
+このポートフォリオは、
+
+「機能数の多さ」ではなく、
+
+**保守しやすく、継続的に改善できるWebアプリケーションを設計・実装すること**
+
+を目標に制作しました。
+
+実務では新機能の追加や仕様変更が継続的に発生するため、
+
+可読性・拡張性・品質を意識した設計を心がけています。
+
+今後も継続的に改善を重ねながら、
+
+より実践的なアプリケーションへ発展させていく予定です。
+
+---
+
+# Contact
+
 GitHub
 
-↓
+https://github.com/utl-flaxy
 
-EC2
+Portfolio
 
-↓
-
-git pull
-
-↓
-
-composer install --no-dev
-
-↓
-
-npm run build
-
-↓
-
-php artisan migrate --force
-
-↓
-
-php artisan optimize
-
-↓
-
-Nginx Restart
-```
+https://shining-will-shop.com
 
 ---
 
-## Deploy Commands
+# License
 
-```bash
-git pull
-
-composer install --no-dev
-
-npm install
-
-npm run build
-
-php artisan migrate --force
-
-php artisan optimize
-
-sudo systemctl restart php8.3-fpm
-
-sudo systemctl restart nginx
-```
-
----
-
-# ✅ 動作確認
-
-以下の動作を確認しています。
-
-## Front
-
-- TOPページ
-- 商品一覧
-- 商品詳細
-- 商品検索
-- カテゴリ検索
-- 並び替え
-- ページネーション
-- カート
-- 注文確認
-
----
-
-## Admin
-
-- 商品登録
-- 商品編集
-- 商品削除
-- カテゴリ管理
-- 注文管理
-- 注文ステータス更新
-
----
-
-## Amazon S3
-
-- 商品画像アップロード
-- 商品画像表示
-- カテゴリ画像アップロード
-- カテゴリ画像表示
-
----
-
-## Inventory
-
-- 通常商品の在庫更新
-- バリエーション商品の在庫更新
-- Transactionによる整合性維持
-
----
-
-# 📌 Notes
-
-本ポートフォリオは、ECサイトのバックエンド設計・管理画面・AWS環境構築を中心に実装しています。
-
-現在、決済機能は実装していません。
-
-今後はSquare Payments APIなどを利用した決済機能を追加し、より実運用に近いECサイトへ発展させる予定です。
-
-# 🚀 Future Improvements
-
-本プロジェクトでは、ECサイトとして必要な基本機能を実装しました。
-
-一方で、実運用を想定すると、さらに改善できる点も多くあります。
-
-今後は以下の機能追加・改善に取り組みたいと考えています。
-
----
-
-## 決済機能
-
-現在は注文確認・注文管理・在庫管理までを実装しています。
-
-今後はSquare Payments APIなどを利用し、
-
-- クレジットカード決済
-- 決済完了後の注文確定
-- 決済結果を考慮した注文処理
-- Webhook連携
-
-などを実装し、実際のECサイトに近い構成へ発展させたいと考えています。
-
----
-
-## 会員機能
-
-現在はゲスト購入を前提としています。
-
-今後は
-
-- 会員登録
-- ログイン
-- マイページ
-- 注文履歴
-
-などを追加し、ユーザー体験を向上させたいと考えています。
-
----
-
-## テストコード
-
-現在は手動による動作確認を中心に開発を進めています。
-
-今後はPHPUnitを用いて
-
-- Unit Test
-- Feature Test
-
-を追加し、品質向上を図りたいと考えています。
-
----
-
-## CI/CD
-
-現在はAWS EC2へ手動でデプロイを行っています。
-
-デプロイ時は以下の手順で反映しています。
-
-- git pull
-- composer install
-- npm run build
-- php artisan migrate --force
-- php artisan optimize
-- Nginx / PHP-FPM 再起動
-
-今後はGitHub Actionsを導入し、
-
-- 自動テスト
-- 自動ビルド
-- AWS EC2への自動デプロイ
-
-まで含めたCI/CDパイプラインを構築する予定です。
-
----
-
-## パフォーマンス改善
-
-画像はAmazon S3で管理していますが、
-
-今後はAmazon CloudFrontを導入し、
-
-- CDN配信
-- キャッシュ最適化
-- 表示速度向上
-
-にも取り組みたいと考えています。
-
----
-
-# 📚 What I Learned
-
-本プロジェクトでは、Laravelを利用したWebアプリケーション開発だけではなく、
-
-- データベース設計
-- AWSへのデプロイ
-- Amazon S3による画像管理
-- Filamentによる管理画面構築
-
-まで、一連の開発工程を経験しました。
-
-特に、
-
-- Query Scopeによる検索処理の共通化
-- Eloquent Relationshipを活用したデータ設計
-- Transaction・`lockForUpdate()`を利用した在庫管理
-- Storage Facadeを利用した画像管理
-
-など、Laravelの標準機能を活かした設計・実装を学ぶことができました。
-
-また、「画面が動くこと」だけではなく、
-
-- 保守性
-- 拡張性
-- 可読性
-- データ整合性
-
-を意識して設計することの重要性を学びました。
-
----
-
-# 🙇 Conclusion
-
-最後までREADMEをご覧いただき、ありがとうございました。
-
-このプロジェクトでは、Laravelを中心に、AWS・MariaDB・Amazon S3・Filamentを組み合わせ、ECサイトの要件整理・設計・実装・デプロイまでまで一貫して取り組みました。
-
-今後も、保守性・拡張性を意識した設計を大切にしながら、新しい技術にも積極的に挑戦し、より実践的なWebアプリケーション開発に取り組んでいきます。
-
-ご意見やフィードバックをいただけますと幸いです。
+This project is published for portfolio and learning purposes.
